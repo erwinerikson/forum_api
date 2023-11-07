@@ -21,7 +21,22 @@ const ThreadsTableTestHelper = {
     };
   
     const result = await pool.query(query);
-    return result.rows;
+    if (!result.rowCount) {
+      throw new NotFoundError('thread tidak ditemukan');
+    }
+  },
+
+  async readThread(thread) {
+    const { id } = thread;
+    const query = {
+      text: `SELECT threads.*, users.username FROM threads
+      LEFT JOIN users ON users.id = threads.owner
+      WHERE threads.id = $1`,
+      values: [id],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows[0];
   },
   
   async cleanTable() {

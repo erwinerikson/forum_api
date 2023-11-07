@@ -30,7 +30,7 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
-  pgm.dropConstraint('notes', 'fk_threads.owner_users.id');
+  pgm.dropConstraint('threads', 'fk_threads.owner_users.id');
 
   pgm.dropTable('threads');
 };
