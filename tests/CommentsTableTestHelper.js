@@ -43,11 +43,12 @@ const CommentsTableTestHelper = {
     return result;
   },
 
-  async readComment(id) {
+  async readComment(comments) {
+    const { id } = comments;
     const query = {
-      text: `SELECT comments.id, users.username, comments.date, comments.content FROM comments
+      text: `SELECT comments.id, users.username, comments.date, comments.content, comments.is_delete FROM comments
       LEFT JOIN users ON users.id = comments.owner
-      WHERE comments.id = $1`,
+      WHERE comments.thread = $1 ORDER BY date ASC`,
       values: [id],
     };
 

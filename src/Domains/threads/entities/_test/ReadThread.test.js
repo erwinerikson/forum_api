@@ -26,10 +26,9 @@ describe('a ReadThread entities', () => {
     };
 
     // Action
-    const readThread = new ReadThread(payload);
+    const { id } = new ReadThread(payload);
 
     // Assert
-    expect(readThread).toBeInstanceOf(ReadThread);
-    expect(readThread.thread).toEqual(payload.thread);
+    expect(id).toEqual(payload.id);
   });
 });

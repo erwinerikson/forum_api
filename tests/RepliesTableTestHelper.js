@@ -43,11 +43,12 @@ const RepliesTableTestHelper = {
     return result;
   },
 
-  async readReply(id) {
+  async readReply(reply) {
+    const { id } = reply;
     const query = {
-      text: `SELECT replies.id, users.username, replies.date, replies.content FROM replies
+      text: `SELECT replies.id, users.username, replies.date, replies.content, replies.is_delete FROM replies
       LEFT JOIN users ON users.id = replies.owner
-      WHERE replies.id = $1`,
+      WHERE replies.thread = $1 ORDER BY date ASC`,
       values: [id],
     };
 

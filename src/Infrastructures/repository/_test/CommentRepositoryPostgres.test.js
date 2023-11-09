@@ -22,7 +22,7 @@ describe('CommentRepositoryPostgres', () => {
   });
 
   describe('addComment function', () => {
-    it('should persist add thread and return thread data correctly', async () => {
+    it('should persist add comment and return comment data correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({
         username: 'dicoding',
@@ -119,7 +119,7 @@ describe('CommentRepositoryPostgres', () => {
         .toThrowError('Missing Authentication to Access');
     });
 
-    it('should return thread id correctly', async () => {
+    it('should return comment id correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({
         username: 'dicoding',
@@ -193,6 +193,19 @@ describe('CommentRepositoryPostgres', () => {
   });
 
   describe('deleteComment function', () => {
+    it('should throw NotFoundError when commentId not found', async () => {
+      // Arrange
+      const payloadDeleteComment = {
+        comment: 'comment-321',
+      };
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+  
+      // Action & Assert
+      await expect(commentRepositoryPostgres.deleteComment(payloadDeleteComment))
+        .rejects
+        .toThrowError('Gagal menghapus comment. Id tidak ditemukan');
+    });
+
     it('should return comment id correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({

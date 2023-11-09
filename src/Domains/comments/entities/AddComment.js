@@ -10,21 +10,13 @@ class AddComment {
   }
   
   _verifyPayload(payload) {
-    const { content, thread, owner } = payload;
+    const { content, thread } = payload;
 
-    if (!owner) {
-      throw new Error('ADD_COMMENT.NOT_CONTAIN_CREDENSIAL');
-    }
-
-    if (typeof owner !== 'string') {
-      throw new Error('ADD_COMMENT.NOT_MEET_DATA_TYPE_CREDENSIAL');
-    }
-
-    if (!content || !thread || !owner) {
+    if (!content || !thread) {
       throw new Error('ADD_COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
     }
   
-    if (typeof content !== 'string' || typeof thread !== 'string' || typeof owner !== 'string') {
+    if (typeof content !== 'string' || typeof thread !== 'string') {
       throw new Error('ADD_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
     }
   }

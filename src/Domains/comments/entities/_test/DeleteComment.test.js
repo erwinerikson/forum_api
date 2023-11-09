@@ -33,12 +33,11 @@ describe('a DeleteComment entities', () => {
     };
   
     // Action
-    const deleteComment = new DeleteComment(payload);
+    const { thread, comment, owner } = new DeleteComment(payload);
   
     // Assert
-    expect(deleteComment).toBeInstanceOf(DeleteComment);
-    expect(deleteComment.thread).toEqual(payload.thread);
-    expect(deleteComment.comment).toEqual(payload.comment);
-    expect(deleteComment.owner).toEqual(payload.owner);
+    expect(thread).toEqual(payload.thread);
+    expect(comment).toEqual(payload.comment);
+    expect(owner).toEqual(payload.owner);
   });
 });

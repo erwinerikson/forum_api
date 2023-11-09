@@ -26,7 +26,7 @@ describe('ReplyRepositoryPostgres', () => {
   });
 
   describe('addReply function', () => {
-    it('should persist add thread and return thread data correctly', async () => {
+    it('should persist add reply and return reply data correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({
         username: 'dicoding',
@@ -231,6 +231,19 @@ describe('ReplyRepositoryPostgres', () => {
   });
 
   describe('deleteReply function', () => {
+    it('should throw NotFoundError when replyId not found', async () => {
+      // Arrange
+      const payloadDeleteReply = {
+        reply: 'reply-321',
+      };
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+  
+      // Action & Assert
+      await expect(replyRepositoryPostgres.deleteReply(payloadDeleteReply))
+        .rejects
+        .toThrowError('Gagal menghapus balasan. Id tidak ditemukan');
+    });
+
     it('should return reply id correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({

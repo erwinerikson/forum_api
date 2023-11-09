@@ -22,14 +22,13 @@ describe('a ReadReply entities', () => {
   it('should read reply entities correctly', () => {
     // Arrange
     const payload = {
-      id: 'thread-123',
+      id: 'reply-123',
     };
 
     // Action
-    const readReply = new ReadReply(payload);
+    const { id } = new ReadReply(payload);
 
     // Assert
-    expect(readReply).toBeInstanceOf(ReadReply);
-    expect(readReply.reply).toEqual(payload.reply);
+    expect(id).toEqual(payload.id);
   });
 });

@@ -1,3 +1,4 @@
+const ReadReply = require('../../../Domains/replies/entities/ReadReply');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 const ReadReplyUseCase = require('../ReadReplyUseCase');
 
@@ -39,12 +40,12 @@ describe('ReadReplyUseCase', () => {
   it('should orchestrating the read reply action correctly', async () => {
     // Arrange
     const useCasePayload = {
-      id: 'thread-123',
+      id: 'reply-123',
     };
 
     const mockResponseReadReply = {
-      id: 'thread-123',
-      content: useCasePayload.title,
+      id: 'reply-123',
+      content: 'sebuah balasan',
       date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
     };
@@ -63,6 +64,14 @@ describe('ReadReplyUseCase', () => {
     const readReply = await readReplyUseCase.execute(useCasePayload);
 
     // Assert
-    expect(readReply).toStrictEqual(mockResponseReadReply);
+    expect(mockReplyRepository.readReply).toBeCalledWith(new ReadReply({
+      id: 'reply-123',
+    }));
+    expect(readReply).toStrictEqual({
+      id: 'reply-123',
+      content: 'sebuah balasan',
+      date: '2021-08-08T07:59:18.982Z',
+      username: 'dicoding',
+    });
   });
 });

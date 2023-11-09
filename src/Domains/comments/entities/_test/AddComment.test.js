@@ -3,14 +3,6 @@ const AddComment = require('../AddComment');
 describe('a AddComment entities', () => {
   it('should throw error when payload not contain needed property', () => {
     // Arrange
-    const payload = {};
-    
-    // Action & Assert
-    expect(() => new AddComment(payload)).toThrowError('ADD_COMMENT.NOT_CONTAIN_CREDENSIAL');
-  });
-
-  it('should throw error when payload not contain needed property', () => {
-    // Arrange
     const payload = {
       content: 1,
       thread: 'thread_123',
@@ -52,12 +44,11 @@ describe('a AddComment entities', () => {
     };
 
     // Action
-    const addComment = new AddComment(payload);
+    const { content, thread, owner } = new AddComment(payload);
 
     // Assert
-    expect(addComment).toBeInstanceOf(AddComment);
-    expect(addComment.content).toEqual(payload.content);
-    expect(addComment.thread).toEqual(payload.thread);
-    expect(addComment.owner).toEqual(payload.owner);
+    expect(content).toEqual(payload.content);
+    expect(thread).toEqual(payload.thread);
+    expect(owner).toEqual(payload.owner);
   });
 });

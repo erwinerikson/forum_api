@@ -36,13 +36,14 @@ describe('a AddReply entities', () => {
     };
 
     // Action
-    const addReply = new AddReply(payload);
+    const {
+      content, thread, comment, owner, 
+    } = new AddReply(payload);
 
     // Assert
-    expect(addReply).toBeInstanceOf(AddReply);
-    expect(addReply.content).toEqual(payload.content);
-    expect(addReply.thread).toEqual(payload.thread);
-    expect(addReply.comment).toEqual(payload.comment);
-    expect(addReply.owner).toEqual(payload.owner);
+    expect(content).toEqual(payload.content);
+    expect(thread).toEqual(payload.thread);
+    expect(comment).toEqual(payload.comment);
+    expect(owner).toEqual(payload.owner);
   });
 });

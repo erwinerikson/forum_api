@@ -35,13 +35,17 @@ describe('a DeleteReply entities', () => {
     };
   
     // Action
-    const deleteReply = new DeleteReply(payload);
+    const {
+      thread,
+      comment,
+      reply,
+      owner,
+    } = new DeleteReply(payload);
   
     // Assert
-    expect(deleteReply).toBeInstanceOf(DeleteReply);
-    expect(deleteReply.thread).toEqual(payload.thread);
-    expect(deleteReply.comment).toEqual(payload.comment);
-    expect(deleteReply.reply).toEqual(payload.reply);
-    expect(deleteReply.owner).toEqual(payload.owner);
+    expect(thread).toEqual(payload.thread);
+    expect(comment).toEqual(payload.comment);
+    expect(reply).toEqual(payload.reply);
+    expect(owner).toEqual(payload.owner);
   });
 });

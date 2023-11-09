@@ -1,3 +1,4 @@
+const ReadComment = require('../../../Domains/comments/entities/ReadComment');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ReadCommentUseCase = require('../ReadCommentUseCase');
 
@@ -44,25 +45,33 @@ describe('ReadCommentUseCase', () => {
 
     const mockResponseReadComment = {
       id: 'comment-123',
-      content: useCasePayload.title,
-      date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
+      date: '2021-08-08T07:59:18.982Z',
+      content: 'sebuah comment',
     };
 
     // creating dependency of use case
     const mockCommentRepository = new CommentRepository();
-    // Mocking
-    mockCommentRepository.readComment = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadComment));
     // Create the use case instace
     const readCommentUseCase = new ReadCommentUseCase({
       commentRepository: mockCommentRepository,
     });
+    // Mocking
+    mockCommentRepository.readComment = jest.fn()
+      .mockImplementation(() => Promise.resolve(mockResponseReadComment));
 
     // Action
     const readComment = await readCommentUseCase.execute(useCasePayload);
 
     // Assert
-    expect(readComment).toStrictEqual(mockResponseReadComment);
+    expect(mockCommentRepository.readComment).toBeCalledWith(new ReadComment({
+      id: 'thread-123',
+    }));
+    expect(readComment).toStrictEqual({
+      id: 'comment-123',
+      username: 'dicoding',
+      date: '2021-08-08T07:59:18.982Z',
+      content: 'sebuah comment',
+    });
   });
 });

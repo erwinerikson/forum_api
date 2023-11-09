@@ -1,6 +1,8 @@
+const DeleteComment = require('../../../Domains/comments/entities/DeleteComment');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const DeleteCommentUseCase = require('../DeleteCommentUseCase');
+const AddComment = require('../../../Domains/comments/entities/AddComment');
 
 describe('DeleteCommentUseCase', () => {
   it('should throw error if use case payload not contain', async () => {
@@ -52,7 +54,7 @@ describe('DeleteCommentUseCase', () => {
     };
 
     const mockResponseDeleteComment = {
-      id: 'comment-123',
+      status: 'success',
     };
 
     // creating dependency of use case
@@ -77,6 +79,14 @@ describe('DeleteCommentUseCase', () => {
     const deleteComment = await deleteCommentUseCase.execute(useCasePayload);
 
     // Assert
+    expect(mockThreadRepository.findThreadsById).toBeCalledWith(useCasePayload.thread);
+    expect(mockCommentRepository.findCommentsById).toBeCalledWith(useCasePayload.comment);
+    expect(mockCommentRepository.findCommentsByOwner).toBeCalledWith(useCasePayload);
     expect(deleteComment).toStrictEqual(mockResponseDeleteComment);
+    expect(mockCommentRepository.deleteComment).toBeCalledWith(new DeleteComment({
+      thread: 'thread-123',
+      comment: 'comment-123',
+      owner: 'user-123',
+    }));
   });
 });

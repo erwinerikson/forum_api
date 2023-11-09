@@ -24,10 +24,6 @@ class ReplyRepositoryPostgres extends ThreadRepository {
 
     const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new NotFoundError('balasan tidak bisa disimpan');
-    }
-
     return result.rows[0];
   }
 
@@ -90,6 +86,8 @@ class ReplyRepositoryPostgres extends ThreadRepository {
     if (!result.rows.length) {
       throw new NotFoundError('Gagal menghapus balasan. Id tidak ditemukan');
     }
+
+    return result.rows[0];
   }
 }
 

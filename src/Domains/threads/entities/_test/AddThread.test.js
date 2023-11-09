@@ -4,8 +4,7 @@ describe('a AddThread entities', () => {
   it('should throw error when payload not contain needed property', () => {
     // Arrange
     const payload = {
-      title: 'abc',
-      body: 'abc',
+      owner: 'user-123',
     };
 
     // Action & Assert
@@ -17,7 +16,7 @@ describe('a AddThread entities', () => {
     const payload = {
       title: 'abc',
       body: true,
-      owner: 'accessToken',
+      owner: 'user-123',
     };
 
     // Action and Assert
@@ -29,16 +28,15 @@ describe('a AddThread entities', () => {
     const payload = {
       title: 'abc',
       body: 'abc',
-      owner: 'accessToken',
+      owner: 'user-123',
     };
 
     // Action
-    const addThread = new AddThread(payload);
+    const { title, body, owner } = new AddThread(payload);
 
     // Assert
-    expect(addThread).toBeInstanceOf(AddThread);
-    expect(addThread.title).toEqual(payload.title);
-    expect(addThread.body).toEqual(payload.body);
-    expect(addThread.owner).toEqual(payload.owner);
+    expect(title).toEqual(payload.title);
+    expect(body).toEqual(payload.body);
+    expect(owner).toEqual(payload.owner);
   });
 });

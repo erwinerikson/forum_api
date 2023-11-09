@@ -22,14 +22,13 @@ describe('a ReadComment entities', () => {
   it('should read comment entities correctly', () => {
     // Arrange
     const payload = {
-      id: 'thread-123',
+      id: 'comment-123',
     };
 
     // Action
-    const readComment = new ReadComment(payload);
+    const { id } = new ReadComment(payload);
 
     // Assert
-    expect(readComment).toBeInstanceOf(ReadComment);
-    expect(readComment.comment).toEqual(payload.comment);
+    expect(id).toEqual(payload.id);
   });
 });

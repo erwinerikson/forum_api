@@ -1,3 +1,4 @@
+const DeleteReply = require('../../../Domains/replies/entities/DeleteReply');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
@@ -58,8 +59,15 @@ describe('DeleteReplyUseCase', () => {
       owner: 'user-123',
     };
 
-    const mockResponseDeleteReply = {
+    const useCasePayloadFindOwner = {
       id: 'reply-123',
+      thread: 'thread-123',
+      comment: 'comment-123',
+      owner: 'user-123',
+    };
+
+    const mockResponseDeleteReply = {
+      status: 'success',
     };
 
     // creating dependency of use case
@@ -74,7 +82,7 @@ describe('DeleteReplyUseCase', () => {
     mockReplyRepository.findRepliesById = jest.fn()
       .mockImplementation(() => Promise.resolve(useCasePayload.reply));
     mockReplyRepository.findRepliesByOwner = jest.fn()
-      .mockImplementation(() => Promise.resolve(useCasePayload));
+      .mockImplementation(() => Promise.resolve(useCasePayloadFindOwner));
     mockReplyRepository.deleteReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockResponseDeleteReply));
     // Create the use case instace
@@ -88,6 +96,16 @@ describe('DeleteReplyUseCase', () => {
     const deleteReply = await deleteReplyUseCase.execute(useCasePayload);
 
     // Assert
+    expect(mockThreadRepository.findThreadsById).toBeCalledWith(useCasePayload.thread);
+    expect(mockCommentRepository.findCommentsById).toBeCalledWith(useCasePayload.comment);
+    expect(mockReplyRepository.findRepliesById).toBeCalledWith(useCasePayload.reply);
+    expect(mockReplyRepository.findRepliesByOwner).toBeCalledWith(useCasePayloadFindOwner);
     expect(deleteReply).toStrictEqual(mockResponseDeleteReply);
+    expect(mockReplyRepository.deleteReply).toBeCalledWith(new DeleteReply({
+      thread: 'thread-123',
+      comment: 'comment-123',
+      reply: 'reply-123',
+      owner: 'user-123',
+    }));
   });
 });
