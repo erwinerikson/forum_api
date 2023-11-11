@@ -17,21 +17,24 @@ class ReadThreadUseCase {
     const readThread = new ReadThread(useCasePayload);
     const readComment = new ReadComment(useCasePayload);
     const readReply = new ReadReply(useCasePayload);
-    const thread = await this._threadRepository.readThread(readThread);
+    const threads = await this._threadRepository.readThread(readThread);
     const comment = await this._commentRepository.readComment(readComment);
     const replies = await this._replyRepository.readReply(readReply);
 
-    this._processData(comment);
-    this._processData(replies);
+    this.processData(comment);
+    this.processData(replies);
+
+    const combine = this.combineCommentReply(comment, replies);
 
     const comments = { ...comment, replies };
-    const threadWhichComments = { ...thread, comments: comment };
-    const threadWhichCommentsWhichReplies = { ...thread, comments };
-    // eslint-disable-next-line max-len
-    return { thread: (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies };
+    const threadWhichComments = { ...threads, comments: comment };
+    const threadWhichCommentsWhichReplies = { ...threads, comments };
+
+    const thread = this.selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies);
+    return thread;
   }
 
-  _processData(data) {
+  processData(data) {
     Object.values(data).forEach((item) => {
       // eslint-disable-next-line no-unused-expressions, no-param-reassign
       (item.is_delete > 0) ? item.content = '**komentar telah dihapus**' : item.content;
@@ -41,6 +44,31 @@ class ReadThreadUseCase {
     });
 
     return data;
+  }
+
+  selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies) {
+    // eslint-disable-next-line max-len
+    const selectData = { thread: (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies };
+    return selectData;
+  }
+
+  combineCommentReply(comment, replies) {
+    Object.values(comment).forEach((itemComment) => {
+      const commentId = itemComment.id;
+      // eslint-disable-next-line no-unused-expressions, no-param-reassign
+      this.processData(comment);
+      // eslint-disable-next-line array-callback-return
+      Object.values(replies).map((itemReply) => {
+        this.processData(replies);
+        if (commentId === itemReply.comment) {
+          // eslint-disable-next-line no-param-reassign
+          delete itemReply.comment;
+          // eslint-disable-next-line no-param-reassign
+          comment = { ...comment, replies };
+        }
+      });
+    });
+    return comment;
   }
 }
 

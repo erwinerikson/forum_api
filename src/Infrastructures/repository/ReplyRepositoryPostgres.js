@@ -63,7 +63,7 @@ class ReplyRepositoryPostgres extends ThreadRepository {
   async readReply(reply) {
     const { id } = reply;
     const query = {
-      text: `SELECT replies.id, replies.content, replies.date, users.username, replies.is_delete FROM replies
+      text: `SELECT replies.id, replies.comment, replies.content, replies.date, users.username, replies.is_delete FROM replies
         LEFT JOIN users ON users.id = replies.owner
         WHERE replies.thread = $1 ORDER BY date ASC`,
       values: [id],
