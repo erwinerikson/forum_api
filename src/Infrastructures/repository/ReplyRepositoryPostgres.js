@@ -29,7 +29,7 @@ class ReplyRepositoryPostgres extends ThreadRepository {
 
   async findRepliesById(id) {
     const query = {
-      text: 'SELECT * FROM replies WHERE id = $1',
+      text: 'SELECT id FROM replies WHERE id = $1',
       values: [id],
     };
     
@@ -39,7 +39,7 @@ class ReplyRepositoryPostgres extends ThreadRepository {
       throw new NotFoundError('balasan tidak ditemukan');
     }
 
-    return result.rows;
+    return result.rows[0].id;
   }
 
   async findRepliesByOwner(reply) {
@@ -57,7 +57,7 @@ class ReplyRepositoryPostgres extends ThreadRepository {
       throw new AuthorizationError('Missing Authentication to Access');
     }
 
-    return result.rows[0];
+    return result.rows[0].id;
   }
 
   async readReply(reply) {

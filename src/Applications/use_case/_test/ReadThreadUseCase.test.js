@@ -86,6 +86,7 @@ describe('ReadThreadUseCase', () => {
     // Arrange
     const replies = [{
       id: 'reply-123',
+      comment: 'comment-123',
       content: 'sebuah balasan',
       date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
@@ -109,10 +110,90 @@ describe('ReadThreadUseCase', () => {
 
     expect(mockProcessData).toReturnWith([{
       id: 'reply-123',
-      content: '**komentar telah dihapus**',
+      comment: 'comment-123',
+      content: '**balasan telah dihapus**',
       date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
     }]);
+  });
+
+  it('should function combineCommentReply', async () => {
+    // Arrange
+    const comment = [
+      {
+        id: 'comment-123',
+        username: 'dicoding',
+        date: '2021-08-08T07:59:18.982Z',
+        content: 'sebuah comment',
+      },
+      {
+        id: 'comment-124',
+        username: 'dicoding',
+        date: '2021-08-08T08:59:18.983Z',
+        content: 'sebuah comment',
+      },
+    ];
+    const replies = [
+      {
+        id: 'reply-123',
+        comment: 'comment-123',
+        content: 'sebuah balasan',
+        date: '2021-08-08T07:59:18.982Z',
+        username: 'dicoding',
+      },
+      {
+        id: 'reply-124',
+        comment: 'comment-123',
+        content: 'sebuah balasan',
+        date: '2021-08-08T07:59:18.983Z',
+        username: 'dicoding',
+      },
+    ];
+    // creating dependency of use case
+    const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
+    // Create the use case instace
+    const readThreadUseCase = new ReadThreadUseCase({
+      threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
+    });
+    // Mock
+    const mockCombineCommentReply = jest.spyOn(readThreadUseCase, 'combineCommentReply');
+
+    // Action
+    readThreadUseCase.combineCommentReply(comment, replies);
+
+    // Assert
+    expect(mockCombineCommentReply).toReturnWith([
+      {
+        id: 'comment-123',
+        username: 'dicoding',
+        date: '2021-08-08T07:59:18.982Z',
+        content: 'sebuah comment',
+        replies: [
+          {
+            id: 'reply-123',
+            content: 'sebuah balasan',
+            date: '2021-08-08T07:59:18.982Z',
+            username: 'dicoding',
+          },
+          {
+            id: 'reply-124',
+            content: 'sebuah balasan',
+            date: '2021-08-08T07:59:18.983Z',
+            username: 'dicoding',
+          },
+        ],
+      },
+      {
+        id: 'comment-124',
+        username: 'dicoding',
+        date: '2021-08-08T08:59:18.983Z',
+        content: 'sebuah comment',
+      },
+    ]);
   });
 
   it('should function selectData no replies', async () => {
@@ -145,14 +226,6 @@ describe('ReadThreadUseCase', () => {
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
     // Mock
-    mockThreadRepository.readThread = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockCommentRepository.readComment = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockReplyRepository.readReply = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    readThreadUseCase.processData = jest.fn()
-      .mockImplementation(() => Promise.resolve());
     const mockSelectData = jest.spyOn(readThreadUseCase, 'selectData');
 
     // Action
@@ -209,10 +282,12 @@ describe('ReadThreadUseCase', () => {
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
     });
-    const comments = { ...comment, replies };
+    const combineComment = { ...comment, replies };
+    const comments = new Array(combineComment);
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
     // Mock
+    readThreadUseCase.combineCommentReply(comment, replies);
     const mockSelectData = jest.spyOn(readThreadUseCase, 'selectData');
 
     // Action
@@ -226,20 +301,22 @@ describe('ReadThreadUseCase', () => {
         body: 'sebuah body thread',
         date: '2021-08-08T07:59:18.982Z',
         username: 'dicoding',
-        comments: {
-          id: 'comment-123',
-          username: 'dicoding',
-          date: '2021-08-08T07:59:18.982Z',
-          content: 'sebuah comment',
-          replies: [
-            {
-              id: 'reply-123',
-              content: 'sebuah balasan',
-              date: '2021-08-08T07:59:18.982Z',
-              username: 'dicoding',
-            },
-          ],
-        },
+        comments: [
+          {
+            id: 'comment-123',
+            username: 'dicoding',
+            date: '2021-08-08T07:59:18.982Z',
+            content: 'sebuah comment',
+            replies: [
+              {
+                id: 'reply-123',
+                content: 'sebuah balasan',
+                date: '2021-08-08T07:59:18.982Z',
+                username: 'dicoding',
+              },
+            ],
+          },
+        ],
       },
     });
   });
@@ -249,6 +326,28 @@ describe('ReadThreadUseCase', () => {
     const useCasePayload = {
       id: 'thread-123',
     };
+    const mockResponseReadThread = [{
+      id: 'thread-123',
+      title: 'sebuah thread',
+      body: 'sebuah body thread',
+      date: '2021-08-08T07:59:18.982Z',
+      username: 'dicoding',
+    }];
+    const mockResponseReadComment = {
+      id: 'comment-123',
+      username: 'dicoding',
+      date: '2021-08-08T07:59:18.982Z',
+      content: 'sebuah comment',
+      is_delete: 0,
+    };
+    const mockResponseReadReply = [{
+      id: 'reply-123',
+      comment: 'comment-123',
+      content: 'sebuah balasan',
+      date: '2021-08-08T07:59:18.982Z',
+      username: 'dicoding',
+      is_delete: 0,
+    }];
     const threads = {
       id: 'thread-123',
       title: 'sebuah thread',
@@ -261,54 +360,12 @@ describe('ReadThreadUseCase', () => {
       username: 'dicoding',
       date: '2021-08-08T07:59:18.982Z',
       content: 'sebuah comment',
-      is_delete: 0,
     };
     const replies = {
-      id: 'thread-123',
-      content: 'sebuah balasan',
-      date: '2021-08-08T07:59:18.982Z',
-      username: 'dicoding',
-      is_delete: 0,
-    };
-    const mockResponseReadThread = {
-      id: 'thread-123',
-      title: 'sebuah thread',
-      body: 'sebuah body thread',
-      date: '2021-08-08T07:59:18.982Z',
-      username: 'dicoding',
-    };
-    const mockResponseReadComment = {
-      id: 'comment-123',
-      username: 'dicoding',
-      date: '2021-08-08T07:59:18.982Z',
-      content: 'sebuah comment',
-    };
-    const mockResponseReadReply = {
       id: 'reply-123',
       content: 'sebuah balasan',
       date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
-    };
-    const mockResponseSelectData = {
-      thread: {
-        id: 'thread-123',
-        body: 'sebuah body thread',
-        title: 'sebuah thread',
-        date: '2021-08-08T07:59:18.982Z',
-        username: 'dicoding',
-        comments: {
-          id: 'comment-123',
-          content: 'sebuah comment',
-          date: '2021-08-08T07:59:18.982Z',
-          username: 'dicoding',
-          replies: {
-            id: 'reply-123',
-            content: 'sebuah balasan',
-            date: '2021-08-08T07:59:18.982Z',
-            username: 'dicoding',
-          },
-        },
-      },
     };
     const comments = { ...comment, replies };
     const threadWhichComments = { ...threads, comments: comment };
@@ -330,44 +387,38 @@ describe('ReadThreadUseCase', () => {
       .mockImplementation(() => Promise.resolve(mockResponseReadComment));
     mockReplyRepository.readReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockResponseReadReply));
-    readThreadUseCase.processData = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadComment));
-    readThreadUseCase.selectData = jest.fn(
-      (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies,
-    )
-      .mockImplementation().mockReturnValue(mockResponseSelectData);
+    readThreadUseCase.processData = jest.spyOn(readThreadUseCase, 'processData');
+    readThreadUseCase.processData(mockResponseReadComment);
+    readThreadUseCase.processData(mockResponseReadReply);
+    readThreadUseCase.combineCommentReply = jest.spyOn(readThreadUseCase, 'combineCommentReply');
+    readThreadUseCase.combineCommentReply(comment, replies);
+    readThreadUseCase.selectData = jest.fn(() => Promise.resolve(
+      { thread: (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies },
+    ));
 
     // Action
     const readThread = await readThreadUseCase.execute(useCasePayload);
 
     // Assert
-    expect(mockThreadRepository.readThread).toBeCalledWith(new ReadThread({
-      id: 'thread-123',
-    }));
-    expect(mockCommentRepository.readComment).toBeCalledWith(new ReadComment({
-      id: 'thread-123',
-    }));
-    expect(mockReplyRepository.readReply).toBeCalledWith(new ReadReply({
-      id: 'thread-123',
-    }));
-    expect(readThreadUseCase.processData).toBeCalledWith({
-      content: 'sebuah comment',
-      date: '2021-08-08T07:59:18.982Z',
-      id: 'comment-123',
-      username: 'dicoding', 
-    });
+    expect(mockThreadRepository.readThread).toBeCalledWith(new ReadThread({ id: 'thread-123' }));
+    expect(mockCommentRepository.readComment).toBeCalledWith(new ReadComment({ id: 'thread-123' }));
+    expect(mockReplyRepository.readReply).toBeCalledWith(new ReadReply({ id: 'thread-123' }));
+    expect(readThreadUseCase.processData).toHaveBeenNthCalledWith(1, mockResponseReadComment);
+    expect(readThreadUseCase.processData).toHaveBeenNthCalledWith(2, mockResponseReadReply);
+    expect(readThreadUseCase.combineCommentReply).toHaveBeenCalledWith(comment, replies);
+    expect(readThreadUseCase.selectData).toHaveBeenCalled();
     expect(readThread).toStrictEqual({
       thread: {
         id: 'thread-123',
-        title: 'sebuah thread',
         body: 'sebuah body thread',
+        title: 'sebuah thread',
         date: '2021-08-08T07:59:18.982Z',
         username: 'dicoding',
         comments: {
           id: 'comment-123',
-          username: 'dicoding',
-          date: '2021-08-08T07:59:18.982Z',
           content: 'sebuah comment',
+          date: '2021-08-08T07:59:18.982Z',
+          username: 'dicoding',
           replies: {
             id: 'reply-123',
             content: 'sebuah balasan',

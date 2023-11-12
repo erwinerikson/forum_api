@@ -1,3 +1,9 @@
+/* eslint-disable no-lonely-if */
+/* eslint-disable max-len */
+/* eslint-disable array-callback-return */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable no-param-reassign */
+
 const ReadThread = require('../../Domains/threads/entities/ReadThread');
 const ReadComment = require('../../Domains/comments/entities/ReadComment');
 const ReadReply = require('../../Domains/replies/entities/ReadReply');
@@ -24,9 +30,8 @@ class ReadThreadUseCase {
     this.processData(comment);
     this.processData(replies);
 
-    const combine = this.combineCommentReply(comment, replies);
+    const comments = this.combineCommentReply(comment, replies);
 
-    const comments = { ...comment, replies };
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
 
@@ -36,37 +41,40 @@ class ReadThreadUseCase {
 
   processData(data) {
     Object.values(data).forEach((item) => {
-      // eslint-disable-next-line no-unused-expressions, no-param-reassign
-      (item.is_delete > 0) ? item.content = '**komentar telah dihapus**' : item.content;
-      // eslint-disable-next-line no-param-reassign
+      if (item.is_delete > 0) {
+        (item.id.slice(0, 8) === 'comment-') ? item.content = '**komentar telah dihapus**' : item.content = '**balasan telah dihapus**';
+      }
       delete item.is_delete;
       return item;
     });
-
     return data;
   }
 
   selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies) {
-    // eslint-disable-next-line max-len
     const selectData = { thread: (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies };
     return selectData;
   }
 
   combineCommentReply(comment, replies) {
+    const dataComment = [];
     Object.values(comment).forEach((itemComment) => {
       const commentId = itemComment.id;
-      // eslint-disable-next-line no-unused-expressions, no-param-reassign
-      this.processData(comment);
-      // eslint-disable-next-line array-callback-return
-      Object.values(replies).map((itemReply) => {
-        this.processData(replies);
+      Object.values(replies).forEach((itemReply) => {
         if (commentId === itemReply.comment) {
-          // eslint-disable-next-line no-param-reassign
+          const comments = itemComment;
           delete itemReply.comment;
-          // eslint-disable-next-line no-param-reassign
-          comment = { ...comment, replies };
+          comment = { ...comments, replies };
+        } else {
+          dataComment.push(itemComment);
         }
       });
+    });
+    // Clean dataComment
+    const uniqueComment = new Set(dataComment);
+    const backDataComment = [...uniqueComment];
+    comment = new Array(comment);
+    Object.values(backDataComment).forEach((dtComment) => {
+      comment.push(dtComment);
     });
     return comment;
   }

@@ -28,7 +28,7 @@ class CommentRepositoryPostgres extends ThreadRepository {
 
   async findCommentsById(id) {
     const query = {
-      text: 'SELECT * FROM comments WHERE id = $1',
+      text: 'SELECT id FROM comments WHERE id = $1',
       values: [id],
     };
     
@@ -38,7 +38,7 @@ class CommentRepositoryPostgres extends ThreadRepository {
       throw new NotFoundError('comment tidak ditemukan');
     }
 
-    return result.rows;
+    return result.rows[0].id;
   }
 
   async findCommentsByOwner(comments) {
@@ -54,7 +54,7 @@ class CommentRepositoryPostgres extends ThreadRepository {
       throw new AuthorizationError('Missing Authentication to Access');
     }
 
-    return result.rows[0];
+    return result.rows[0].id;
   }
 
   async readComment(comments) {
@@ -84,8 +84,6 @@ class CommentRepositoryPostgres extends ThreadRepository {
     if (!result.rows.length) {
       throw new NotFoundError('Gagal menghapus comment. Id tidak ditemukan');
     }
-
-    return result.rows[0];
   }
 }
 

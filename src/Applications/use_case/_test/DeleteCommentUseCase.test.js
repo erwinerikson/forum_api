@@ -2,7 +2,6 @@ const DeleteComment = require('../../../Domains/comments/entities/DeleteComment'
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const DeleteCommentUseCase = require('../DeleteCommentUseCase');
-const AddComment = require('../../../Domains/comments/entities/AddComment');
 
 describe('DeleteCommentUseCase', () => {
   it('should throw error if use case payload not contain', async () => {
@@ -43,6 +42,39 @@ describe('DeleteCommentUseCase', () => {
     await expect(deleteCommentUseCase.execute(useCasePayload))
       .rejects
       .toThrowError('DELETE_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
+  });
+
+  it('should throw error if failed to delete', async () => {
+    // Arrange
+    // creating dependency of use case
+    const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    // Create the use case instace
+    const deleteCommentUseCase = new DeleteCommentUseCase({
+      threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+    });
+    const useCasePayload = {
+      thread: 'thread-123',
+      comment: 'comment-123',
+      owner: 'user-123',
+    };
+    // Mock
+    const mockResponseDeleteComment = 'Gagal menghapus comment. Id tidak ditemukan';
+    mockThreadRepository.findThreadsById = jest.fn()
+      .mockImplementation(() => Promise.resolve());
+    mockCommentRepository.findCommentsById = jest.fn()
+      .mockImplementation(() => Promise.resolve());
+    mockCommentRepository.findCommentsByOwner = jest.fn()
+      .mockImplementation(() => Promise.resolve());
+    mockCommentRepository.deleteComment = jest.fn()
+      .mockImplementation(() => Promise.resolve(mockResponseDeleteComment));
+
+    // Action
+    const deleteComment = await deleteCommentUseCase.execute(useCasePayload);
+
+    // Assert
+    expect(deleteComment).toBe(mockResponseDeleteComment);
   });
 
   it('should orchestrating the delete comment action correctly', async () => {

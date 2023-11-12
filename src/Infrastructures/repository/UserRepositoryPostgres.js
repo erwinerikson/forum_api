@@ -79,6 +79,8 @@ class UserRepositoryPostgres extends UserRepository {
     if (!result.rowCount) {
       throw new InvariantError('user tidak ditemukan');
     }
+
+    return result.rows[0].id;
   }
 }
 

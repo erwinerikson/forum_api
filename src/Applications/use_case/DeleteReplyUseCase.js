@@ -15,12 +15,12 @@ class DeleteReplyUseCase {
     const deleteReply = new DeleteReply(useCasePayload);
     const {
       thread, comment, reply: id, owner,
-    } = useCasePayload;
+    } = deleteReply;
     await this._threadRepository.findThreadsById(thread);
     await this._commentRepository.findCommentsById(comment);
     await this._replyRepository.findRepliesById(id);
     await this._replyRepository.findRepliesByOwner({
-      thread, comment, id, owner,
+      id, thread, comment, owner,
     });
     return this._replyRepository.deleteReply(deleteReply);
   }

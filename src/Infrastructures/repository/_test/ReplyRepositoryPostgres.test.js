@@ -119,7 +119,7 @@ describe('ReplyRepositoryPostgres', () => {
       const reply = await replyRepositoryPostgres.findRepliesById('reply-321');
 
       // Assert
-      expect(reply).toHaveLength(1);
+      expect(reply).toStrictEqual('reply-321');
     });
   });
 
@@ -184,9 +184,7 @@ describe('ReplyRepositoryPostgres', () => {
       const reply = await replyRepositoryPostgres.findRepliesByOwner(findOwnerReply);
   
       // Assert
-      expect(reply).toEqual({
-        id: 'reply-321',
-      });
+      expect(reply).toEqual('reply-321');
     });
   });
 

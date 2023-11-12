@@ -25,7 +25,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
 
   async findThreadsById(id) {
     const query = {
-      text: 'SELECT threads.* FROM threads WHERE id = $1',
+      text: 'SELECT threads.id FROM threads WHERE id = $1',
       values: [id],
     };
     
@@ -35,7 +35,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
       throw new NotFoundError('thread tidak ditemukan');
     }
 
-    return result.rows;
+    return result.rows[0].id;
   }
 
   async readThread(thread) {

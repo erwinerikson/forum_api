@@ -16,7 +16,7 @@ const ThreadsTableTestHelper = {
   
   async findThreadsById(id) {
     const query = {
-      text: 'SELECT * FROM threads WHERE id = $1',
+      text: 'SELECT id FROM threads WHERE id = $1',
       values: [id],
     };
   
@@ -24,6 +24,7 @@ const ThreadsTableTestHelper = {
     if (!result.rowCount) {
       throw new NotFoundError('thread tidak ditemukan');
     }
+    return result.rows[0].id;
   },
 
   async readThread(thread) {

@@ -11,12 +11,12 @@ const CommentsTableTestHelper = {
     };
       
     const result = await pool.query(query);
-    return result;
+    return result.rows[0];
   },
 
   async findCommentsById(id) {
     const query = {
-      text: 'SELECT * FROM comments WHERE id = $1',
+      text: 'SELECT id FROM comments WHERE id = $1',
       values: [id],
     };
   
@@ -24,23 +24,21 @@ const CommentsTableTestHelper = {
     if (!result.rowCount) {
       throw new NotFoundError('thread tidak ditemukan');
     }
+    return result.rows[0].id;
   },
 
   async findCommentsByOwner({
     id = 'comment-123', thread = 'thread-123', content = 'sebuah content', owner = 'user-123', date = '2021-08-08T07:19:09.775Z', is_delete = '0',
   }) {
     const query = {
-      text: 'SELECT * FROM comments WHERE id = $1 AND thread = $2 AND owner = $3 RETURNING id',
+      text: 'SELECT id FROM comments WHERE id = $1 AND thread = $2 AND owner = $3 RETURNING id',
       values: [id, thread, owner],
     };
-  
     const result = await pool.query(query);
-
     if (!result.rowCount) {
       throw new NotFoundError('thread atau komentar tidak ditemukan');
     }
-
-    return result;
+    return result.rows[0].id;
   },
 
   async readComment(comments) {

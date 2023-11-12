@@ -45,11 +45,14 @@ describe('UserRepositoryPostgres', () => {
       const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
-      await userRepositoryPostgres.addUser(registerUser);
+      const users = await userRepositoryPostgres.addUser(registerUser);
 
       // Assert
-      const users = await UsersTableTestHelper.findUsersById('user-123');
-      expect(users).toHaveLength(1);
+      expect(users).toEqual({
+        id: 'user-123',
+        username: 'dicoding',
+        fullname: 'Dicoding Indonesia',
+      });
     });
 
     it('should return registered user correctly', async () => {
@@ -126,8 +129,14 @@ describe('UserRepositoryPostgres', () => {
   describe('findUsersById', () => {
     it('should throw Error when user id not correctly', async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, {});
+      const registerUser = new RegisterUser({
+        username: 'dicoding',
+        password: 'secret_password',
+        fullname: 'Dicoding Indonesia',
+      });
+      const fakeIdGenerator = () => '123'; // stub!
+      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
+      await userRepositoryPostgres.addUser(registerUser);
 
       // Action & Assert
       await expect(userRepositoryPostgres.findUsersById('user-321'))
@@ -138,10 +147,19 @@ describe('UserRepositoryPostgres', () => {
 
   it('should not throw InvariantError user id correctly', async () => {
     // Arrange
-    await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
-    const userRepositoryPostgres = new UserRepositoryPostgres(pool, {});
+    const registerUser = new RegisterUser({
+      username: 'dicoding',
+      password: 'secret_password',
+      fullname: 'Dicoding Indonesia',
+    });
+    const fakeIdGenerator = () => '123'; // stub!
+    const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
+    await userRepositoryPostgres.addUser(registerUser);
 
-    // Action & Assert
-    await expect(userRepositoryPostgres.findUsersById('user-123')).resolves.not.toThrowError(InvariantError);
+    // Action
+    const userId = await userRepositoryPostgres.findUsersById('user-123');
+
+    // Assert
+    expect(userId).toEqual('user-123');
   });
 });

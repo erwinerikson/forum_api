@@ -82,7 +82,7 @@ describe('ThreadRepositoryPostgres', () => {
       const threadId = await threadRepositoryPostgres.findThreadsById('thread-321');
 
       // Assert
-      expect(threadId).toHaveLength(1);
+      expect(threadId).toEqual('thread-321');
     });
   });
 

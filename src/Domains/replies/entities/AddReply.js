@@ -15,11 +15,11 @@ class AddReply {
   _verifyPayload({
     content, thread, comment, owner, 
   }) {
-    if (!content || !thread || !comment) {
+    if (!content || !thread || !comment || !owner) {
       throw new Error('ADD_REPLY.NOT_CONTAIN_NEEDED_PROPERTY');
     }
     
-    if (typeof content !== 'string' || typeof thread !== 'string' || typeof comment !== 'string') {
+    if (typeof content !== 'string' || typeof thread !== 'string' || typeof comment !== 'string' || typeof owner !== 'string') {
       throw new Error('ADD_REPLY.NOT_MEET_DATA_TYPE_SPECIFICATION');
     }
   }

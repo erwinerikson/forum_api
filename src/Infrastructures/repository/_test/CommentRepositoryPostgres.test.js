@@ -99,7 +99,7 @@ describe('CommentRepositoryPostgres', () => {
       const commentId = await commentRepositoryPostgres.findCommentsById('comment-321');
 
       // Assert
-      expect(commentId).toHaveLength(1);
+      expect(commentId).toStrictEqual('comment-321');
     });
   });
 
@@ -154,9 +154,7 @@ describe('CommentRepositoryPostgres', () => {
       const comment = await commentRepositoryPostgres.findCommentsByOwner(findOwnerComment);
   
       // Assert
-      expect(comment).toEqual({
-        id: 'comment-321',
-      });
+      expect(comment).toEqual('comment-321');
     });
   });
 

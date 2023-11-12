@@ -74,6 +74,12 @@ describe('DeleteReplyUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
+    // Create the use case instace
+    const deleteReplyUseCase = new DeleteReplyUseCase({
+      threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
+    });
     // Mocking
     mockThreadRepository.findThreadsById = jest.fn()
       .mockImplementation(() => Promise.resolve(useCasePayload.thread));
@@ -85,12 +91,6 @@ describe('DeleteReplyUseCase', () => {
       .mockImplementation(() => Promise.resolve(useCasePayloadFindOwner));
     mockReplyRepository.deleteReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockResponseDeleteReply));
-    // Create the use case instace
-    const deleteReplyUseCase = new DeleteReplyUseCase({
-      threadRepository: mockThreadRepository,
-      commentRepository: mockCommentRepository,
-      replyRepository: mockReplyRepository,
-    });
 
     // Action
     const deleteReply = await deleteReplyUseCase.execute(useCasePayload);

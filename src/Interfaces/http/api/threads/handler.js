@@ -27,7 +27,7 @@ class ThreadsHandler {
   async getThreadHandler(request, h) {
     const readThreadUseCase = this._container.getInstance(ReadThreadUseCase.name);
     const data = await readThreadUseCase.execute(request.params);
-
+    
     const response = h.response({
       status: 'success',
       data,
