@@ -27,19 +27,18 @@ class ReadThreadUseCase {
     const comment = await this._commentRepository.readComment(readComment);
     const replies = await this._replyRepository.readReply(readReply);
 
-    this.processData(comment);
-    this.processData(replies);
+    this._processData(comment);
+    this._processData(replies);
 
-    const comments = this.combineCommentReply(comment, replies);
+    const comments = this._combineCommentReply(comment, replies);
 
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
 
-    const thread = this.selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies);
-    return thread;
+    return this._selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies);
   }
 
-  processData(data) {
+  _processData(data) {
     Object.values(data).forEach((item) => {
       if (item.is_delete > 0) {
         (item.id.slice(0, 8) === 'comment-') ? item.content = '**komentar telah dihapus**' : item.content = '**balasan telah dihapus**';
@@ -50,12 +49,12 @@ class ReadThreadUseCase {
     return data;
   }
 
-  selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies) {
+  _selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies) {
     const selectData = { thread: (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies };
     return selectData;
   }
 
-  combineCommentReply(comment, replies) {
+  _combineCommentReply(comment, replies) {
     const dataComment = [];
     Object.values(comment).forEach((itemComment) => {
       const commentId = itemComment.id;

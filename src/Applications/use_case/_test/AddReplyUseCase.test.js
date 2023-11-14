@@ -1,5 +1,5 @@
 const AddReply = require('../../../Domains/replies/entities/AddReply');
-const UserRepository = require('../../../Domains/users/UserRepository');
+const AddedReply = require('../../../Domains/replies/entities/AddedReply');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
@@ -9,13 +9,11 @@ describe('AddReplyUseCase', () => {
   it('should throw error if use case payload not contain', async () => {
     // Arrange
     // creating dependency of use case
-    const mockUserRepository = new UserRepository();
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
     // Create the use case instace
     const addReplyUseCase = new AddReplyUseCase({
-      userRepository: mockUserRepository,
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
@@ -33,13 +31,11 @@ describe('AddReplyUseCase', () => {
   it('should throw error if payload not string', async () => {
     // Arrange
     // creating dependency of use case
-    const mockUserRepository = new UserRepository();
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
     // Create the use case instace
     const addReplyUseCase = new AddReplyUseCase({
-      userRepository: mockUserRepository,
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
@@ -66,20 +62,18 @@ describe('AddReplyUseCase', () => {
       owner: 'user-123',
     };
 
-    const mockResponseAddReply = {
+    const mockAddedReply = new AddedReply({
       id: 'reply-123',
-      content: useCasePayload.title,
+      content: 'sebuah balasan',
       owner: 'user-123',
-    };
+    });
 
     // creating dependency of use case
-    const mockUserRepository = new UserRepository();
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
     // Create the use case instace
     const addReplyUseCase = new AddReplyUseCase({
-      userRepository: mockUserRepository,
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
@@ -89,19 +83,20 @@ describe('AddReplyUseCase', () => {
       .mockImplementation(() => Promise.resolve(useCasePayload.thread));
     mockCommentRepository.findCommentsById = jest.fn()
       .mockImplementation(() => Promise.resolve(useCasePayload.comment));
-    mockUserRepository.findUsersById = jest.fn()
-      .mockImplementation(() => Promise.resolve(useCasePayload.owner));
     mockReplyRepository.addReply = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseAddReply));
+      .mockImplementation(() => Promise.resolve(mockAddedReply));
 
     // Action
     const addReply = await addReplyUseCase.execute(useCasePayload);
 
     // Assert
+    expect(addReply).toStrictEqual(new AddedReply({
+      id: 'reply-123',
+      content: 'sebuah balasan',
+      owner: 'user-123',
+    }));
     expect(mockThreadRepository.findThreadsById).toBeCalledWith(useCasePayload.thread);
     expect(mockCommentRepository.findCommentsById).toBeCalledWith(useCasePayload.comment);
-    expect(mockUserRepository.findUsersById).toBeCalledWith(useCasePayload.owner);
-    expect(addReply).toStrictEqual(mockResponseAddReply);
     expect(mockReplyRepository.addReply).toBeCalledWith(new AddReply({
       content: 'sebuah balasan',
       thread: 'thread-123',

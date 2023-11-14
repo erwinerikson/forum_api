@@ -125,41 +125,4 @@ describe('UserRepositoryPostgres', () => {
       expect(userId).toEqual('user-321');
     });
   });
-
-  describe('findUsersById', () => {
-    it('should throw Error when user id not correctly', async () => {
-      // Arrange
-      const registerUser = new RegisterUser({
-        username: 'dicoding',
-        password: 'secret_password',
-        fullname: 'Dicoding Indonesia',
-      });
-      const fakeIdGenerator = () => '123'; // stub!
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-      await userRepositoryPostgres.addUser(registerUser);
-
-      // Action & Assert
-      await expect(userRepositoryPostgres.findUsersById('user-321'))
-        .rejects
-        .toThrowError(InvariantError);
-    });
-  });
-
-  it('should not throw InvariantError user id correctly', async () => {
-    // Arrange
-    const registerUser = new RegisterUser({
-      username: 'dicoding',
-      password: 'secret_password',
-      fullname: 'Dicoding Indonesia',
-    });
-    const fakeIdGenerator = () => '123'; // stub!
-    const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-    await userRepositoryPostgres.addUser(registerUser);
-
-    // Action
-    const userId = await userRepositoryPostgres.findUsersById('user-123');
-
-    // Assert
-    expect(userId).toEqual('user-123');
-  });
 });

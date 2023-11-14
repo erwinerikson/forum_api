@@ -69,10 +69,10 @@ describe('ReadThreadUseCase', () => {
       replyRepository: mockReplyRepository,
     });
     // Mock
-    const mockProcessData = jest.spyOn(readThreadUseCase, 'processData');
+    const mockProcessData = jest.spyOn(readThreadUseCase, '_processData');
 
     // Action
-    readThreadUseCase.processData(comment);
+    readThreadUseCase._processData(comment);
 
     expect(mockProcessData).toReturnWith([{
       id: 'comment-123',
@@ -103,10 +103,10 @@ describe('ReadThreadUseCase', () => {
       replyRepository: mockReplyRepository,
     });
     // Mock
-    const mockProcessData = jest.spyOn(readThreadUseCase, 'processData');
+    const mockProcessData = jest.spyOn(readThreadUseCase, '_processData');
 
     // Action
-    readThreadUseCase.processData(replies);
+    readThreadUseCase._processData(replies);
 
     expect(mockProcessData).toReturnWith([{
       id: 'reply-123',
@@ -160,10 +160,10 @@ describe('ReadThreadUseCase', () => {
       replyRepository: mockReplyRepository,
     });
     // Mock
-    const mockCombineCommentReply = jest.spyOn(readThreadUseCase, 'combineCommentReply');
+    const mockCombineCommentReply = jest.spyOn(readThreadUseCase, '_combineCommentReply');
 
     // Action
-    readThreadUseCase.combineCommentReply(comment, replies);
+    readThreadUseCase._combineCommentReply(comment, replies);
 
     // Assert
     expect(mockCombineCommentReply).toReturnWith([
@@ -226,10 +226,10 @@ describe('ReadThreadUseCase', () => {
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
     // Mock
-    const mockSelectData = jest.spyOn(readThreadUseCase, 'selectData');
+    const mockSelectData = jest.spyOn(readThreadUseCase, '_selectData');
 
     // Action
-    readThreadUseCase.selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies);
+    readThreadUseCase._selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies);
   
     // Assert
     expect(mockSelectData).toReturnWith({
@@ -287,11 +287,11 @@ describe('ReadThreadUseCase', () => {
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
     // Mock
-    readThreadUseCase.combineCommentReply(comment, replies);
-    const mockSelectData = jest.spyOn(readThreadUseCase, 'selectData');
+    readThreadUseCase._combineCommentReply(comment, replies);
+    const mockSelectData = jest.spyOn(readThreadUseCase, '_selectData');
 
     // Action
-    readThreadUseCase.selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies);
+    readThreadUseCase._selectData(replies, threadWhichComments, threadWhichCommentsWhichReplies);
   
     // Assert
     expect(mockSelectData).toReturnWith({
@@ -370,6 +370,9 @@ describe('ReadThreadUseCase', () => {
     const comments = { ...comment, replies };
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
+    const mockSelectData = {
+      thread: (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies,
+    };
     // creating dependency of use case
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
@@ -387,14 +390,12 @@ describe('ReadThreadUseCase', () => {
       .mockImplementation(() => Promise.resolve(mockResponseReadComment));
     mockReplyRepository.readReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockResponseReadReply));
-    readThreadUseCase.processData = jest.spyOn(readThreadUseCase, 'processData');
-    readThreadUseCase.processData(mockResponseReadComment);
-    readThreadUseCase.processData(mockResponseReadReply);
-    readThreadUseCase.combineCommentReply = jest.spyOn(readThreadUseCase, 'combineCommentReply');
-    readThreadUseCase.combineCommentReply(comment, replies);
-    readThreadUseCase.selectData = jest.fn(() => Promise.resolve(
-      { thread: (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies },
-    ));
+    readThreadUseCase.processData = jest.spyOn(readThreadUseCase, '_processData');
+    readThreadUseCase._processData(mockResponseReadComment);
+    readThreadUseCase._processData(mockResponseReadReply);
+    readThreadUseCase.combineCommentReply = jest.spyOn(readThreadUseCase, '_combineCommentReply');
+    readThreadUseCase._combineCommentReply(comment, replies);
+    readThreadUseCase._selectData = jest.fn(() => Promise.resolve(mockSelectData));
 
     // Action
     const readThread = await readThreadUseCase.execute(useCasePayload);
@@ -403,10 +404,10 @@ describe('ReadThreadUseCase', () => {
     expect(mockThreadRepository.readThread).toBeCalledWith(new ReadThread({ id: 'thread-123' }));
     expect(mockCommentRepository.readComment).toBeCalledWith(new ReadComment({ id: 'thread-123' }));
     expect(mockReplyRepository.readReply).toBeCalledWith(new ReadReply({ id: 'thread-123' }));
-    expect(readThreadUseCase.processData).toHaveBeenNthCalledWith(1, mockResponseReadComment);
-    expect(readThreadUseCase.processData).toHaveBeenNthCalledWith(2, mockResponseReadReply);
-    expect(readThreadUseCase.combineCommentReply).toHaveBeenCalledWith(comment, replies);
-    expect(readThreadUseCase.selectData).toHaveBeenCalled();
+    expect(readThreadUseCase._processData).toHaveBeenNthCalledWith(1, mockResponseReadComment);
+    expect(readThreadUseCase._processData).toHaveBeenNthCalledWith(2, mockResponseReadReply);
+    expect(readThreadUseCase._combineCommentReply).toHaveBeenCalledWith(comment, replies);
+    expect(readThreadUseCase._selectData).toHaveBeenCalled();
     expect(readThread).toStrictEqual({
       thread: {
         id: 'thread-123',

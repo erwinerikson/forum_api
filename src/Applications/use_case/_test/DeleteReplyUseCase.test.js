@@ -96,11 +96,11 @@ describe('DeleteReplyUseCase', () => {
     const deleteReply = await deleteReplyUseCase.execute(useCasePayload);
 
     // Assert
+    expect(deleteReply).toStrictEqual(mockResponseDeleteReply);
     expect(mockThreadRepository.findThreadsById).toBeCalledWith(useCasePayload.thread);
     expect(mockCommentRepository.findCommentsById).toBeCalledWith(useCasePayload.comment);
     expect(mockReplyRepository.findRepliesById).toBeCalledWith(useCasePayload.reply);
     expect(mockReplyRepository.findRepliesByOwner).toBeCalledWith(useCasePayloadFindOwner);
-    expect(deleteReply).toStrictEqual(mockResponseDeleteReply);
     expect(mockReplyRepository.deleteReply).toBeCalledWith(new DeleteReply({
       thread: 'thread-123',
       comment: 'comment-123',
