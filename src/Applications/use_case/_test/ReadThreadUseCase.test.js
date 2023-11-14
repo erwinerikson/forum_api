@@ -390,10 +390,10 @@ describe('ReadThreadUseCase', () => {
       .mockImplementation(() => Promise.resolve(mockResponseReadComment));
     mockReplyRepository.readReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockResponseReadReply));
-    readThreadUseCase.processData = jest.spyOn(readThreadUseCase, '_processData');
+    const mockProcessData = jest.spyOn(readThreadUseCase, '_processData');
     readThreadUseCase._processData(mockResponseReadComment);
     readThreadUseCase._processData(mockResponseReadReply);
-    readThreadUseCase.combineCommentReply = jest.spyOn(readThreadUseCase, '_combineCommentReply');
+    const mockCombineCommentReply = jest.spyOn(readThreadUseCase, '_combineCommentReply');
     readThreadUseCase._combineCommentReply(comment, replies);
     readThreadUseCase._selectData = jest.fn(() => Promise.resolve(mockSelectData));
 
@@ -404,9 +404,9 @@ describe('ReadThreadUseCase', () => {
     expect(mockThreadRepository.readThread).toBeCalledWith(new ReadThread({ id: 'thread-123' }));
     expect(mockCommentRepository.readComment).toBeCalledWith(new ReadComment({ id: 'thread-123' }));
     expect(mockReplyRepository.readReply).toBeCalledWith(new ReadReply({ id: 'thread-123' }));
-    expect(readThreadUseCase._processData).toHaveBeenNthCalledWith(1, mockResponseReadComment);
-    expect(readThreadUseCase._processData).toHaveBeenNthCalledWith(2, mockResponseReadReply);
-    expect(readThreadUseCase._combineCommentReply).toHaveBeenCalledWith(comment, replies);
+    expect(mockProcessData).toHaveBeenNthCalledWith(1, mockResponseReadComment);
+    expect(mockProcessData).toHaveBeenNthCalledWith(2, mockResponseReadReply);
+    expect(mockCombineCommentReply).toHaveBeenCalledWith(comment, replies);
     expect(readThreadUseCase._selectData).toHaveBeenCalled();
     expect(readThread).toStrictEqual({
       thread: {
