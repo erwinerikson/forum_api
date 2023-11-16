@@ -361,16 +361,17 @@ describe('ReadThreadUseCase', () => {
       date: '2021-08-08T07:59:18.982Z',
       content: 'sebuah comment',
     };
-    const replies = {
+    const replies = [{
       id: 'reply-123',
       content: 'sebuah balasan',
       date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
-    };
-    const comments = { ...comment, replies };
+    }];
+    const combineComment = { ...comment, replies };
+    const comments = new Array(combineComment);
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
-    const mockSelectData = {
+    const mockFunctionSelectData = {
       thread: (replies.length === 0) ? threadWhichComments : threadWhichCommentsWhichReplies,
     };
     // creating dependency of use case
@@ -395,7 +396,7 @@ describe('ReadThreadUseCase', () => {
     readThreadUseCase._processData(mockResponseReadReply);
     const mockCombineCommentReply = jest.spyOn(readThreadUseCase, '_combineCommentReply');
     readThreadUseCase._combineCommentReply(comment, replies);
-    readThreadUseCase._selectData = jest.fn(() => Promise.resolve(mockSelectData));
+    readThreadUseCase._selectData = jest.fn(() => Promise.resolve(mockFunctionSelectData));
 
     // Action
     const readThread = await readThreadUseCase.execute(useCasePayload);
@@ -415,18 +416,22 @@ describe('ReadThreadUseCase', () => {
         title: 'sebuah thread',
         date: '2021-08-08T07:59:18.982Z',
         username: 'dicoding',
-        comments: {
-          id: 'comment-123',
-          content: 'sebuah comment',
-          date: '2021-08-08T07:59:18.982Z',
-          username: 'dicoding',
-          replies: {
-            id: 'reply-123',
-            content: 'sebuah balasan',
+        comments: [
+          {
+            id: 'comment-123',
+            content: 'sebuah comment',
             date: '2021-08-08T07:59:18.982Z',
             username: 'dicoding',
+            replies: [
+              {
+                id: 'reply-123',
+                content: 'sebuah balasan',
+                date: '2021-08-08T07:59:18.982Z',
+                username: 'dicoding',
+              },
+            ],
           },
-        },
+        ],
       },
     });
   });
