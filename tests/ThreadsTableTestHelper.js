@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-const NotFoundError = require('../src/Commons/exceptions/NotFoundError');
 const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const ThreadsTableTestHelper = {
@@ -13,19 +12,6 @@ const ThreadsTableTestHelper = {
   
     const result = await pool.query(query);
     return result.rows[0];
-  },
-  
-  async findThreadsById(id) {
-    const query = {
-      text: 'SELECT id FROM threads WHERE id = $1',
-      values: [id],
-    };
-  
-    const result = await pool.query(query);
-    if (!result.rowCount) {
-      throw new NotFoundError('thread tidak ditemukan');
-    }
-    return result.rows[0].id;
   },
 
   async readThread(thread) {

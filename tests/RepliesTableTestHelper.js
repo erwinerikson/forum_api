@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-const NotFoundError = require('../src/Commons/exceptions/NotFoundError');
 const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const RepliesTableTestHelper = {
@@ -13,35 +12,6 @@ const RepliesTableTestHelper = {
           
     const result = await pool.query(query);
     return result.rows[0];
-  },
-
-  async findRepliesById(id) {
-    const query = {
-      text: 'SELECT id FROM replies WHERE id = $1',
-      values: [id],
-    };
-  
-    const result = await pool.query(query);
-    if (!result.rowCount) {
-      throw new NotFoundError('reply tidak ditemukan');
-    }
-    return result.rows[0].id;
-  },
-
-  async findRepliesByOwner({
-    id = 'comment-123', thread = 'thread-123', comment = 'comment-123', owner = 'user-123',
-  }) {
-    const query = {
-      text: 'SELECT id FROM replies WHERE id = $1 AND thread = $2 AND comment = $3 AND owner = $4',
-      values: [id, thread, comment, owner],
-    };
-  
-    const result = await pool.query(query);
-
-    if (!result.rowCount) {
-      throw new NotFoundError('thread, komentar atau balasan tidak ditemukan');
-    }
-    return result.rows[0].id;
   },
 
   async readReply(reply) {
@@ -65,10 +35,7 @@ const RepliesTableTestHelper = {
       values: [updatedAt, is_delete, id],
     };
       
-    const result = await pool.query(query);
-    if (!result.rows.length) {
-      throw new NotFoundError('Gagal menghapus balasan. Id tidak ditemukan');
-    }
+    await pool.query(query);
   },
 
   async cleanTable() {
