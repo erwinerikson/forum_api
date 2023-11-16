@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+const NotFoundError = require('../src/Commons/exceptions/NotFoundError');
 const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const CommentsTableTestHelper = {
@@ -54,11 +55,12 @@ const CommentsTableTestHelper = {
     return result.rows;
   },
 
-  async deleteComment(id) {
+  async deleteComment(comments) {
+    const { comment: id } = comments;
     const updatedAt = '2021-08-08T07:19:09.775Z';
     const is_delete = 1;
     const query = {
-      text: 'UPDATE comments SET updated_at = $1, is_delete = $2 WHERE id = $3',
+      text: 'UPDATE comments SET updated_at = $1, is_delete = $2 WHERE id = $3 RETURNING id',
       values: [updatedAt, is_delete, id],
     };
       

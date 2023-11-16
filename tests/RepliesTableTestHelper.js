@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+const NotFoundError = require('../src/Commons/exceptions/NotFoundError');
 const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const RepliesTableTestHelper = {
@@ -31,7 +32,7 @@ const RepliesTableTestHelper = {
     id = 'comment-123', thread = 'thread-123', comment = 'comment-123', owner = 'user-123',
   }) {
     const query = {
-      text: 'SELECT id FROM replies WHERE id = $1 AND thread = $2 AND comment = $3 AND owner = $4 RETURNING id',
+      text: 'SELECT id FROM replies WHERE id = $1 AND thread = $2 AND comment = $3 AND owner = $4',
       values: [id, thread, comment, owner],
     };
   
@@ -60,7 +61,7 @@ const RepliesTableTestHelper = {
     const updatedAt = '2021-08-08T07:19:09.775Z';
     const is_delete = 1;
     const query = {
-      text: 'UPDATE replies SET updated_at = $1, is_delete = $2 WHERE id = $3',
+      text: 'UPDATE replies SET updated_at = $1, is_delete = $2 WHERE id = $3 RETURNING id',
       values: [updatedAt, is_delete, id],
     };
       
