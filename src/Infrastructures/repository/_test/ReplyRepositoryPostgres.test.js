@@ -189,7 +189,7 @@ describe('ReplyRepositoryPostgres', () => {
   });
 
   describe('readReply function', () => {
-    it('should return reply id correctly', async () => {
+    it('should return reply correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({
         username: 'dicoding',
@@ -223,25 +223,24 @@ describe('ReplyRepositoryPostgres', () => {
       await replyAddRepositoryPostgres.addReply(addReply);
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
     
-      // Action & Assert
-      await expect(replyRepositoryPostgres.readReply({ id: 'thread-321' })).resolves.not.toThrowError(NotFoundError);
+      // Action
+      const readReply = await replyRepositoryPostgres.readReply({ id: 'thread-321' });
+
+      // Assert
+      expect(readReply).toStrictEqual([
+        {
+          id: 'reply-321',
+          comment: 'comment-321',
+          content: 'sebuah reply',
+          date: readReply[0].date,
+          username: 'dicoding',
+          is_delete: 0,
+        },
+      ]);
     });
   });
 
   describe('deleteReply function', () => {
-    it('should throw NotFoundError when replyId not found', async () => {
-      // Arrange
-      const payloadDeleteReply = {
-        reply: 'reply-321',
-      };
-      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
-  
-      // Action & Assert
-      await expect(replyRepositoryPostgres.deleteReply(payloadDeleteReply))
-        .rejects
-        .toThrowError('Gagal menghapus balasan. Id tidak ditemukan');
-    });
-
     it('should return reply id correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({
@@ -283,9 +282,11 @@ describe('ReplyRepositoryPostgres', () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
       await replyRepositoryPostgres.findRepliesByOwner(findOwnerReply);
       
-      // Action & Assert
-      await expect(replyRepositoryPostgres.deleteReply({ reply: 'reply-321' }))
-        .resolves.not.toThrowError(NotFoundError);
+      // Action
+      const deleteReply = await replyRepositoryPostgres.deleteReply({ reply: 'reply-321' });
+
+      // Assert
+      expect(deleteReply).toStrictEqual(1);
     });
   });
 });

@@ -75,15 +75,12 @@ class CommentRepositoryPostgres extends ThreadRepository {
     const updatedAt = new Date().toISOString();
     const is_delete = 1;
     const query = {
-      text: 'UPDATE comments SET updated_at = $1, is_delete = $2 WHERE id = $3 RETURNING id',
+      text: 'UPDATE comments SET updated_at = $1, is_delete = $2 WHERE id = $3 RETURNING is_delete',
       values: [updatedAt, is_delete, id],
     };
         
     const result = await this._pool.query(query);
-    
-    if (!result.rows.length) {
-      throw new NotFoundError('Gagal menghapus comment. Id tidak ditemukan');
-    }
+    return result.rows[0].is_delete;
   }
 }
 

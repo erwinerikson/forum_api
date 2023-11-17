@@ -43,12 +43,16 @@ describe('ReadReplyUseCase', () => {
       id: 'reply-123',
     };
 
-    const mockResponseReadReply = {
-      id: 'reply-123',
-      content: 'sebuah balasan',
-      date: '2021-08-08T07:59:18.982Z',
-      username: 'dicoding',
-    };
+    const mockResponseReadReply = [
+      {
+        id: 'reply-321',
+        comment: 'comment-321',
+        content: 'sebuah reply',
+        date: '2021-08-08T07:59:18.982Z',
+        username: 'dicoding',
+        is_delete: 0,
+      },
+    ];
 
     // creating dependency of use case
     const mockReplyRepository = new ReplyRepository();
@@ -67,11 +71,15 @@ describe('ReadReplyUseCase', () => {
     expect(mockReplyRepository.readReply).toBeCalledWith(new ReadReply({
       id: 'reply-123',
     }));
-    expect(readReply).toStrictEqual({
-      id: 'reply-123',
-      content: 'sebuah balasan',
-      date: '2021-08-08T07:59:18.982Z',
-      username: 'dicoding',
-    });
+    expect(readReply).toStrictEqual([
+      {
+        id: 'reply-321',
+        comment: 'comment-321',
+        content: 'sebuah reply',
+        date: '2021-08-08T07:59:18.982Z',
+        username: 'dicoding',
+        is_delete: 0,
+      },
+    ]);
   });
 });

@@ -32,11 +32,12 @@ const CommentsTableTestHelper = {
     const updatedAt = '2021-08-08T07:19:09.775Z';
     const is_delete = 1;
     const query = {
-      text: 'UPDATE comments SET updated_at = $1, is_delete = $2 WHERE id = $3 RETURNING id',
+      text: 'UPDATE comments SET updated_at = $1, is_delete = $2 WHERE id = $3 RETURNING is_delete',
       values: [updatedAt, is_delete, id],
     };
       
-    await pool.query(query);
+    const result = await pool.query(query);
+    return result.rows[0].is_delete;
   },
 
   async cleanTable() {

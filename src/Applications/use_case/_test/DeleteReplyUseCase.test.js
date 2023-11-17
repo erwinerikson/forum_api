@@ -66,9 +66,7 @@ describe('DeleteReplyUseCase', () => {
       owner: 'user-123',
     };
 
-    const mockResponseDeleteReply = {
-      status: 'success',
-    };
+    const mockResponseDeleteReply = 1;
 
     // creating dependency of use case
     const mockThreadRepository = new ThreadRepository();
@@ -82,13 +80,13 @@ describe('DeleteReplyUseCase', () => {
     });
     // Mocking
     mockThreadRepository.findThreadsById = jest.fn()
-      .mockImplementation(() => Promise.resolve(useCasePayload.thread));
+      .mockImplementation(() => Promise.resolve());
     mockCommentRepository.findCommentsById = jest.fn()
-      .mockImplementation(() => Promise.resolve(useCasePayload.comment));
+      .mockImplementation(() => Promise.resolve());
     mockReplyRepository.findRepliesById = jest.fn()
-      .mockImplementation(() => Promise.resolve(useCasePayload.reply));
+      .mockImplementation(() => Promise.resolve());
     mockReplyRepository.findRepliesByOwner = jest.fn()
-      .mockImplementation(() => Promise.resolve(useCasePayloadFindOwner));
+      .mockImplementation(() => Promise.resolve());
     mockReplyRepository.deleteReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockResponseDeleteReply));
 
@@ -96,7 +94,7 @@ describe('DeleteReplyUseCase', () => {
     const deleteReply = await deleteReplyUseCase.execute(useCasePayload);
 
     // Assert
-    expect(deleteReply).toStrictEqual(mockResponseDeleteReply);
+    expect(deleteReply).toStrictEqual(1);
     expect(mockThreadRepository.findThreadsById).toBeCalledWith(useCasePayload.thread);
     expect(mockCommentRepository.findCommentsById).toBeCalledWith(useCasePayload.comment);
     expect(mockReplyRepository.findRepliesById).toBeCalledWith(useCasePayload.reply);

@@ -60,9 +60,8 @@ class ReadThreadUseCase {
       const commentId = itemComment.id;
       Object.values(replies).forEach((itemReply) => {
         if (commentId === itemReply.comment) {
-          const comments = itemComment;
           delete itemReply.comment;
-          comment = { ...comments, replies };
+          comment = { ...itemComment, replies };
         } else {
           dataComment.push(itemComment);
         }

@@ -43,12 +43,15 @@ describe('ReadCommentUseCase', () => {
       id: 'thread-123',
     };
 
-    const mockResponseReadComment = {
-      id: 'comment-123',
-      username: 'dicoding',
-      date: '2021-08-08T07:59:18.982Z',
-      content: 'sebuah comment',
-    };
+    const mockResponseReadComment = [
+      {
+        id: 'comment-321',
+        username: 'dicoding',
+        date: '2021-08-08T07:59:18.982Z',
+        content: 'sebuah content',
+        is_delete: 0,
+      },
+    ];
 
     // creating dependency of use case
     const mockCommentRepository = new CommentRepository();
@@ -67,11 +70,14 @@ describe('ReadCommentUseCase', () => {
     expect(mockCommentRepository.readComment).toBeCalledWith(new ReadComment({
       id: 'thread-123',
     }));
-    expect(readComment).toStrictEqual({
-      id: 'comment-123',
-      username: 'dicoding',
-      date: '2021-08-08T07:59:18.982Z',
-      content: 'sebuah comment',
-    });
+    expect(readComment).toStrictEqual([
+      {
+        id: 'comment-321',
+        username: 'dicoding',
+        date: '2021-08-08T07:59:18.982Z',
+        content: 'sebuah content',
+        is_delete: 0,
+      },
+    ]);
   });
 });

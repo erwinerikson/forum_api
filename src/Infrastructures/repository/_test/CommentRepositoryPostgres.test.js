@@ -1,7 +1,6 @@
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
-const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const RegisterUser = require('../../../Domains/users/entities/RegisterUser');
 const AddThread = require('../../../Domains/threads/entities/AddThread');
 const AddComment = require('../../../Domains/comments/entities/AddComment');
@@ -159,7 +158,7 @@ describe('CommentRepositoryPostgres', () => {
   });
 
   describe('readComment function', () => {
-    it('should return comment id correctly', async () => {
+    it('should return comment correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({
         username: 'dicoding',
@@ -185,25 +184,23 @@ describe('CommentRepositoryPostgres', () => {
       await commentAddRepositoryPostgres.addComment(addComment);
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
     
-      // Action & Assert
-      await expect(commentRepositoryPostgres.readComment('comment-321')).resolves.not.toThrowError(NotFoundError);
+      // Action
+      const readComment = await commentRepositoryPostgres.readComment({ id: 'thread-321' });
+
+      // Assert
+      expect(readComment).toStrictEqual([
+        {
+          id: 'comment-321',
+          username: 'dicoding',
+          date: readComment[0].date,
+          content: 'sebuah content',
+          is_delete: 0,
+        },
+      ]);
     });
   });
 
   describe('deleteComment function', () => {
-    it('should throw NotFoundError when commentId not found', async () => {
-      // Arrange
-      const payloadDeleteComment = {
-        comment: 'comment-321',
-      };
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
-  
-      // Action & Assert
-      await expect(commentRepositoryPostgres.deleteComment(payloadDeleteComment))
-        .rejects
-        .toThrowError('Gagal menghapus comment. Id tidak ditemukan');
-    });
-
     it('should return comment id correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({
@@ -236,8 +233,11 @@ describe('CommentRepositoryPostgres', () => {
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
       await commentRepositoryPostgres.findCommentsByOwner(findOwnerComment);
       
-      // Action & Assert
-      await expect(commentRepositoryPostgres.deleteComment({ comment: 'comment-321' })).resolves.not.toThrowError(NotFoundError);
+      // Action
+      const deleteComment = await commentRepositoryPostgres.deleteComment({ comment: 'comment-321' });
+
+      // Assert
+      expect(deleteComment).toStrictEqual(1);
     });
   });
 });
