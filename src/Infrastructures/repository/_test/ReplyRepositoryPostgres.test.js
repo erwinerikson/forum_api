@@ -3,14 +3,8 @@ const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
-const RegisterUser = require('../../../Domains/users/entities/RegisterUser');
-const AddThread = require('../../../Domains/threads/entities/AddThread');
-const AddComment = require('../../../Domains/comments/entities/AddComment');
 const AddReply = require('../../../Domains/replies/entities/AddReply');
 const pool = require('../../database/postgres/pool');
-const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
-const UserRepositoryPostgres = require('../UserRepositoryPostgres');
-const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
 const ReplyRepositoryPostgres = require('../ReplyRepositoryPostgres');
 
 describe('ReplyRepositoryPostgres', () => {
@@ -28,45 +22,47 @@ describe('ReplyRepositoryPostgres', () => {
   describe('addReply function', () => {
     it('should persist add reply and return reply data correctly', async () => {
       // Arrange
-      const registerUser = new RegisterUser({
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
         username: 'dicoding',
         password: 'secret_password',
         fullname: 'Dicoding Indonesia',
       });
-      const addThread = new AddThread({
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
         title: 'sebuah thread',
         body: 'sebuah body thread',
         owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addComment = new AddComment({
-        content: 'sebuah comment',
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
         thread: 'thread-123',
+        content: 'sebuah comment',
         owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addReply = new AddReply({
+      const payloadAddReply = new AddReply({
         content: 'sebuah reply',
         thread: 'thread-123',
         comment: 'comment-123',
         owner: 'user-123',
       });
-      const fakeIdGenerator = () => '123'; // stub!
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
-      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
-      await userRepositoryPostgres.addUser(registerUser);
-      await threadRepositoryPostgres.addThread(addThread);
-      await commentRepositoryPostgres.addComment(addComment);
-  
-      // Action
-      const reply = await replyRepositoryPostgres.addReply(addReply);
-  
-      // Assert
-      expect(reply).toEqual({
+      const expectedAddReply = {
         id: 'reply-123',
         content: 'sebuah reply',
         owner: 'user-123',
-      });
+      };
+      const fakeIdGenerator = () => '123'; // stub!
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
+  
+      // Action
+      const addReply = await replyRepositoryPostgres.addReply(payloadAddReply);
+  
+      // Assert
+      const replyId = await replyRepositoryPostgres.findRepliesById(expectedAddReply.id);
+      expect(addReply).toEqual(expectedAddReply);
+      expect(replyId).toEqual(expectedAddReply.id);
     });
   });
 
@@ -83,43 +79,42 @@ describe('ReplyRepositoryPostgres', () => {
 
     it('should return reply id correctly', async () => {
       // Arrange
-      const registerUser = new RegisterUser({
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
         username: 'dicoding',
         password: 'secret_password',
         fullname: 'Dicoding Indonesia',
       });
-      const addThread = new AddThread({
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
         title: 'sebuah thread',
         body: 'sebuah body thread',
-        owner: 'user-321',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addComment = new AddComment({
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        thread: 'thread-123',
         content: 'sebuah comment',
-        thread: 'thread-321',
-        owner: 'user-321',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addReply = new AddReply({
+      await RepliesTableTestHelper.addReply({
+        id: 'reply-123',
         content: 'sebuah reply',
-        thread: 'thread-321',
-        comment: 'comment-321',
-        owner: 'user-321',
+        thread: 'thread-123',
+        comment: 'comment-123',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const fakeIdGenerator = () => '321'; // stub!
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
-      const replyAddRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
-      await userRepositoryPostgres.addUser(registerUser);
-      await threadRepositoryPostgres.addThread(addThread);
-      await commentRepositoryPostgres.addComment(addComment);
-      await replyAddRepositoryPostgres.addReply(addReply);
+      const expectedIdReply = 'reply-123';
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
-      const reply = await replyRepositoryPostgres.findRepliesById('reply-321');
+      const reply = await replyRepositoryPostgres.findRepliesById('reply-123');
 
       // Assert
-      expect(reply).toStrictEqual('reply-321');
+      expect(reply).toStrictEqual(expectedIdReply);
     });
   });
 
@@ -142,151 +137,141 @@ describe('ReplyRepositoryPostgres', () => {
 
     it('should return reply id correctly', async () => {
       // Arrange
-      const registerUser = new RegisterUser({
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
         username: 'dicoding',
         password: 'secret_password',
         fullname: 'Dicoding Indonesia',
       });
-      const addThread = new AddThread({
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
         title: 'sebuah thread',
         body: 'sebuah body thread',
-        owner: 'user-321',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addComment = new AddComment({
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        thread: 'thread-123',
         content: 'sebuah comment',
-        thread: 'thread-321',
-        owner: 'user-321',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addReply = new AddReply({
+      await RepliesTableTestHelper.addReply({
+        id: 'reply-123',
         content: 'sebuah reply',
-        thread: 'thread-321',
-        comment: 'comment-321',
-        owner: 'user-321',
+        thread: 'thread-123',
+        comment: 'comment-123',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
       const findOwnerReply = {
-        id: 'reply-321',
-        thread: 'thread-321',
-        comment: 'comment-321',
-        owner: 'user-321',
+        id: 'reply-123',
+        thread: 'thread-123',
+        comment: 'comment-123',
+        owner: 'user-123',
       };
-      const fakeIdGenerator = () => '321'; // stub!
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
-      const replyAddRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
-      await userRepositoryPostgres.addUser(registerUser);
-      await threadRepositoryPostgres.addThread(addThread);
-      await commentRepositoryPostgres.addComment(addComment);
-      await replyAddRepositoryPostgres.addReply(addReply);
+      const expectedIdReply = 'reply-123';
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
   
       // Action
       const reply = await replyRepositoryPostgres.findRepliesByOwner(findOwnerReply);
   
       // Assert
-      expect(reply).toEqual('reply-321');
+      expect(reply).toEqual(expectedIdReply);
     });
   });
 
   describe('readReply function', () => {
     it('should return reply correctly', async () => {
       // Arrange
-      const registerUser = new RegisterUser({
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
         username: 'dicoding',
         password: 'secret_password',
         fullname: 'Dicoding Indonesia',
       });
-      const addThread = new AddThread({
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
         title: 'sebuah thread',
         body: 'sebuah body thread',
-        owner: 'user-321',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addComment = new AddComment({
-        content: 'sebuah content',
-        thread: 'thread-321',
-        owner: 'user-321',
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        thread: 'thread-123',
+        content: 'sebuah comment',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addReply = new AddReply({
+      await RepliesTableTestHelper.addReply({
+        id: 'reply-123',
         content: 'sebuah reply',
-        thread: 'thread-321',
-        comment: 'comment-321',
-        owner: 'user-321',
+        thread: 'thread-123',
+        comment: 'comment-123',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const fakeIdGenerator = () => '321'; // stub!
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
-      const replyAddRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
-      await userRepositoryPostgres.addUser(registerUser);
-      await threadRepositoryPostgres.addThread(addThread);
-      await commentRepositoryPostgres.addComment(addComment);
-      await replyAddRepositoryPostgres.addReply(addReply);
-      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
-    
-      // Action
-      const readReply = await replyRepositoryPostgres.readReply({ id: 'thread-321' });
-
-      // Assert
-      expect(readReply).toStrictEqual([
+      const expectedReadReply = [
         {
-          id: 'reply-321',
-          comment: 'comment-321',
+          id: 'reply-123',
+          comment: 'comment-123',
           content: 'sebuah reply',
-          date: readReply[0].date,
+          date: '2021-08-08T07:19:09.775Z',
           username: 'dicoding',
           is_delete: 0,
         },
-      ]);
+      ];
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+    
+      // Action
+      const readReply = await replyRepositoryPostgres.readReply({ id: 'thread-123' });
+
+      // Assert
+      expect(readReply).toStrictEqual(expectedReadReply);
     });
   });
 
   describe('deleteReply function', () => {
     it('should return reply id correctly', async () => {
       // Arrange
-      const registerUser = new RegisterUser({
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
         username: 'dicoding',
         password: 'secret_password',
         fullname: 'Dicoding Indonesia',
       });
-      const addThread = new AddThread({
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
         title: 'sebuah thread',
         body: 'sebuah body thread',
-        owner: 'user-321',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addComment = new AddComment({
-        content: 'sebuah content',
-        thread: 'thread-321',
-        owner: 'user-321',
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        thread: 'thread-123',
+        content: 'sebuah comment',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const addReply = new AddReply({
+      await RepliesTableTestHelper.addReply({
+        id: 'reply-123',
         content: 'sebuah reply',
-        thread: 'thread-321',
-        comment: 'comment-321',
-        owner: 'user-321',
+        thread: 'thread-123',
+        comment: 'comment-123',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const findOwnerReply = {
-        id: 'reply-321',
-        thread: 'thread-321',
-        comment: 'comment-321',
-        owner: 'user-321',
-      };
-      const fakeIdGenerator = () => '321'; // stub!
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
-      const replyAddRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
-      await userRepositoryPostgres.addUser(registerUser);
-      await threadRepositoryPostgres.addThread(addThread);
-      await commentRepositoryPostgres.addComment(addComment);
-      await replyAddRepositoryPostgres.addReply(addReply);
+      const expectedDeleteReply = 1;
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
-      await replyRepositoryPostgres.findRepliesByOwner(findOwnerReply);
       
       // Action
-      const deleteReply = await replyRepositoryPostgres.deleteReply({ reply: 'reply-321' });
+      const deleteReply = await replyRepositoryPostgres.deleteReply({ reply: 'reply-123' });
 
       // Assert
-      expect(deleteReply).toStrictEqual(1);
+      expect(deleteReply).toStrictEqual(expectedDeleteReply);
     });
   });
 });
