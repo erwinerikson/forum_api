@@ -139,6 +139,7 @@ describe('/threads endpoint', () => {
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(201);
       expect(responseJson.status).toEqual('success');
+      expect(responseJson.data).toBeDefined();
       expect(responseJson.data.id).toEqual(response.id);
       expect(responseJson.data.title).toEqual(response.title);
       expect(responseJson.data.owner).toEqual(response.owner);
@@ -196,6 +197,16 @@ describe('/threads endpoint', () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
+      await server.inject({
+        method: 'POST',
+        url: `/threads/${threadId}/comments`,
+        payload: {
+          content: 'sebuah comment',
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       const responseJsonComment = JSON.parse(responseComment.payload);
       const commentId = responseJsonComment.data.addedComment.id;
       // Reply
@@ -220,6 +231,10 @@ describe('/threads endpoint', () => {
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
       expect(responseJson.status).toEqual('success');
+      expect(responseJson.data).toBeDefined();
+      expect(responseJson.data.thread).toBeDefined();
+      expect(responseJson.data.thread.comments).toHaveLength(2);
+      expect(responseJson.data.thread.comments[0].replies).toHaveLength(1);
     });
   });
 });

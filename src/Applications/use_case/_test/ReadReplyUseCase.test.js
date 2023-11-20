@@ -43,7 +43,7 @@ describe('ReadReplyUseCase', () => {
       id: 'reply-123',
     };
 
-    const mockResponseReadReply = [
+    const expectedReadReply = [
       {
         id: 'reply-321',
         comment: 'comment-321',
@@ -58,7 +58,7 @@ describe('ReadReplyUseCase', () => {
     const mockReplyRepository = new ReplyRepository();
     // Mocking
     mockReplyRepository.readReply = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadReply));
+      .mockImplementation(() => Promise.resolve(expectedReadReply));
     // Create the use case instace
     const readReplyUseCase = new ReadReplyUseCase({
       replyRepository: mockReplyRepository,

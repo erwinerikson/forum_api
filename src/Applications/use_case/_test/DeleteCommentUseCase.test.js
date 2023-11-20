@@ -52,7 +52,7 @@ describe('DeleteCommentUseCase', () => {
       owner: 'user-123',
     };
 
-    const mockResponseDeleteComment = 1;
+    const expectedDeleteComment = 1;
 
     // creating dependency of use case
     const mockThreadRepository = new ThreadRepository();
@@ -65,7 +65,7 @@ describe('DeleteCommentUseCase', () => {
     mockCommentRepository.findCommentsByOwner = jest.fn()
       .mockImplementation(() => Promise.resolve());
     mockCommentRepository.deleteComment = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseDeleteComment));
+      .mockImplementation(() => Promise.resolve(expectedDeleteComment));
     // Create the use case instace
     const deleteCommentUseCase = new DeleteCommentUseCase({
       threadRepository: mockThreadRepository,

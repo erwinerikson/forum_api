@@ -161,7 +161,9 @@ describe('/replies endpoint', () => {
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(201);
       expect(responseJson.status).toEqual('success');
+      expect(responseJson.data.id).toEqual(response.id);
       expect(responseJson.data.addedReply.content).toEqual('sebuah balasan');
+      expect(responseJson.data.owner).toEqual(response.owner);
     });
   });
 

@@ -66,7 +66,7 @@ describe('DeleteReplyUseCase', () => {
       owner: 'user-123',
     };
 
-    const mockResponseDeleteReply = 1;
+    const expectedDeleteReply = 1;
 
     // creating dependency of use case
     const mockThreadRepository = new ThreadRepository();
@@ -88,7 +88,7 @@ describe('DeleteReplyUseCase', () => {
     mockReplyRepository.findRepliesByOwner = jest.fn()
       .mockImplementation(() => Promise.resolve());
     mockReplyRepository.deleteReply = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseDeleteReply));
+      .mockImplementation(() => Promise.resolve(expectedDeleteReply));
 
     // Action
     const deleteReply = await deleteReplyUseCase.execute(useCasePayload);

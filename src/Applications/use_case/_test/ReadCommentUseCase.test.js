@@ -43,7 +43,7 @@ describe('ReadCommentUseCase', () => {
       id: 'thread-123',
     };
 
-    const mockResponseReadComment = [
+    const expectedReadComment = [
       {
         id: 'comment-321',
         username: 'dicoding',
@@ -61,7 +61,7 @@ describe('ReadCommentUseCase', () => {
     });
     // Mocking
     mockCommentRepository.readComment = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadComment));
+      .mockImplementation(() => Promise.resolve(expectedReadComment));
 
     // Action
     const readComment = await readCommentUseCase.execute(useCasePayload);

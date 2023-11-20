@@ -49,6 +49,28 @@ describe('ReadThreadUseCase', () => {
       .toThrowError('READ_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
   });
 
+  it('should throw error if thread does not exist', async () => {
+    // Arrange
+    // creating dependency of use case
+    const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
+    // Create the use case instace
+    const readThreadUseCase = new ReadThreadUseCase({
+      threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
+    });
+    const useCasePayload = {
+      id: 'xyz',
+    };
+
+    // Action & Assert
+    await expect(readThreadUseCase.execute(useCasePayload))
+      .rejects
+      .toThrowError('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+  });
+
   it('should function processData comment', async () => {
     // Arrange
     const comment = [{
@@ -222,7 +244,9 @@ describe('ReadThreadUseCase', () => {
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
     });
-    const comments = { ...comment, replies };
+    const itemComment = comment[0];
+    const combineComment = { ...itemComment, replies };
+    const comments = new Array(combineComment);
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
     // Mock
@@ -260,12 +284,12 @@ describe('ReadThreadUseCase', () => {
       date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
     };
-    const comment = {
+    const comment = [{
       id: 'comment-123',
       username: 'dicoding',
       date: '2021-08-08T07:59:18.982Z',
       content: 'sebuah comment',
-    };
+    }];
     const replies = [{
       id: 'reply-123',
       content: 'sebuah balasan',
@@ -282,7 +306,8 @@ describe('ReadThreadUseCase', () => {
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
     });
-    const combineComment = { ...comment, replies };
+    const itemComment = comment[0];
+    const combineComment = { ...itemComment, replies };
     const comments = new Array(combineComment);
     const threadWhichComments = { ...threads, comments: comment };
     const threadWhichCommentsWhichReplies = { ...threads, comments };
@@ -326,14 +351,14 @@ describe('ReadThreadUseCase', () => {
     const useCasePayload = {
       id: 'thread-123',
     };
-    const mockResponseReadThread = {
+    const expectedReadThread = {
       id: 'thread-123',
       title: 'sebuah thread',
       body: 'sebuah body thread',
       date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
     };
-    const mockResponseReadComment = [
+    const expectedReadComment = [
       {
         id: 'comment-123',
         username: 'dicoding',
@@ -342,7 +367,7 @@ describe('ReadThreadUseCase', () => {
         is_delete: 0,
       },
     ];
-    const mockResponseReadReply = [];
+    const expectedReadReply = [];
     const threads = {
       id: 'thread-123',
       title: 'sebuah thread',
@@ -378,14 +403,14 @@ describe('ReadThreadUseCase', () => {
     });
     // Mocking
     mockThreadRepository.readThread = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadThread));
+      .mockImplementation(() => Promise.resolve(expectedReadThread));
     mockCommentRepository.readComment = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadComment));
+      .mockImplementation(() => Promise.resolve(expectedReadComment));
     mockReplyRepository.readReply = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadReply));
+      .mockImplementation(() => Promise.resolve(expectedReadReply));
     const mockProcessData = jest.spyOn(readThreadUseCase, '_processData');
-    readThreadUseCase._processData(mockResponseReadComment);
-    readThreadUseCase._processData(mockResponseReadReply);
+    readThreadUseCase._processData(comment);
+    readThreadUseCase._processData(replies);
     const mockCombineCommentReply = jest.spyOn(readThreadUseCase, '_combineCommentReply');
     readThreadUseCase._combineCommentReply(comment, replies);
     readThreadUseCase._selectData = jest.fn(() => Promise.resolve(mockFunctionSelectData));
@@ -397,9 +422,9 @@ describe('ReadThreadUseCase', () => {
     expect(mockThreadRepository.readThread).toBeCalledWith(new ReadThread({ id: 'thread-123' }));
     expect(mockCommentRepository.readComment).toBeCalledWith(new ReadComment({ id: 'thread-123' }));
     expect(mockReplyRepository.readReply).toBeCalledWith(new ReadReply({ id: 'thread-123' }));
-    expect(mockProcessData).toHaveBeenNthCalledWith(1, mockResponseReadComment);
-    expect(mockProcessData).toHaveBeenNthCalledWith(2, mockResponseReadReply);
-    expect(mockCombineCommentReply).toHaveBeenCalledWith(comment, replies);
+    expect(mockProcessData).toHaveBeenNthCalledWith(1, expectedReadComment);
+    expect(mockProcessData).toHaveBeenNthCalledWith(2, expectedReadReply);
+    expect(mockCombineCommentReply).toHaveBeenCalledWith(expectedReadComment, expectedReadReply);
     expect(readThreadUseCase._selectData).toHaveBeenCalledTimes(1);
     expect(readThread).toStrictEqual({
       thread: {
@@ -425,14 +450,14 @@ describe('ReadThreadUseCase', () => {
     const useCasePayload = {
       id: 'thread-123',
     };
-    const mockResponseReadThread = {
+    const expectedReadThread = {
       id: 'thread-123',
       title: 'sebuah thread',
       body: 'sebuah body thread',
       date: '2021-08-08T07:59:18.982Z',
       username: 'dicoding',
     };
-    const mockResponseReadComment = [
+    const expectedReadComment = [
       {
         id: 'comment-123',
         username: 'dicoding',
@@ -441,7 +466,7 @@ describe('ReadThreadUseCase', () => {
         is_delete: 0,
       },
     ];
-    const mockResponseReadReply = [
+    const expectedReadReply = [
       {
         id: 'reply-123',
         comment: 'comment-123',
@@ -491,14 +516,14 @@ describe('ReadThreadUseCase', () => {
     });
     // Mocking
     mockThreadRepository.readThread = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadThread));
+      .mockImplementation(() => Promise.resolve(expectedReadThread));
     mockCommentRepository.readComment = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadComment));
+      .mockImplementation(() => Promise.resolve(expectedReadComment));
     mockReplyRepository.readReply = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockResponseReadReply));
+      .mockImplementation(() => Promise.resolve(expectedReadReply));
     const mockProcessData = jest.spyOn(readThreadUseCase, '_processData');
-    readThreadUseCase._processData(mockResponseReadComment);
-    readThreadUseCase._processData(mockResponseReadReply);
+    readThreadUseCase._processData(comment);
+    readThreadUseCase._processData(replies);
     const mockCombineCommentReply = jest.spyOn(readThreadUseCase, '_combineCommentReply');
     readThreadUseCase._combineCommentReply(comment, replies);
     readThreadUseCase._selectData = jest.fn(() => Promise.resolve(mockFunctionSelectData));
@@ -510,9 +535,9 @@ describe('ReadThreadUseCase', () => {
     expect(mockThreadRepository.readThread).toBeCalledWith(new ReadThread({ id: 'thread-123' }));
     expect(mockCommentRepository.readComment).toBeCalledWith(new ReadComment({ id: 'thread-123' }));
     expect(mockReplyRepository.readReply).toBeCalledWith(new ReadReply({ id: 'thread-123' }));
-    expect(mockProcessData).toHaveBeenNthCalledWith(1, mockResponseReadComment);
-    expect(mockProcessData).toHaveBeenNthCalledWith(2, mockResponseReadReply);
-    expect(mockCombineCommentReply).toHaveBeenCalledWith(comment, replies);
+    expect(mockProcessData).toHaveBeenNthCalledWith(1, expectedReadComment);
+    expect(mockProcessData).toHaveBeenNthCalledWith(2, expectedReadReply);
+    expect(mockCombineCommentReply).toHaveBeenCalledWith(expectedReadComment, expectedReadReply);
     expect(readThreadUseCase._selectData).toHaveBeenCalledTimes(1);
     expect(readThread).toStrictEqual({
       thread: {
