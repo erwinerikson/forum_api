@@ -6,12 +6,11 @@ const CommentsTableTestHelper = {
     id = 'comment-123', thread = 'thread-123', content = 'sebuah comment', owner = 'user-123', date = '2021-08-08T07:19:09.775Z', is_delete = 0,
   }) {
     const query = {
-      text: 'INSERT INTO comments VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, content, owner',
+      text: 'INSERT INTO comments VALUES($1, $2, $3, $4, $5, $6, $7)',
       values: [id, thread, content, owner, date, date, is_delete],
     };
       
-    const result = await pool.query(query);
-    return result.rows[0];
+    await pool.query(query);
   },
 
   async getComment(comments) {

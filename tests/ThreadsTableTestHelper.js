@@ -6,12 +6,11 @@ const ThreadsTableTestHelper = {
     id = 'thread-123', title = 'sebuah thread', body = 'sebuah body thread', owner = 'user-123', date = '2021-08-08T07:19:09.775Z',
   }) {
     const query = {
-      text: 'INSERT INTO threads VALUES($1, $2, $3, $4, $5) RETURNING id, title, owner',
+      text: 'INSERT INTO threads VALUES($1, $2, $3, $4, $5)',
       values: [id, title, body, owner, date],
     };
   
-    const result = await pool.query(query);
-    return result.rows[0];
+    await pool.query(query);
   },
 
   async getThread(thread) {
