@@ -1,6 +1,4 @@
 const InvariantError = require('./InvariantError');
-const AuthenticationError = require('./AuthenticationError');
-const NotFoundError = require('./NotFoundError');
 
 const DomainErrorTranslator = {
   translate(error) {

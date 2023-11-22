@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable no-param-reassign */
-
 const GetThread = require('../../Domains/threads/entities/GetThread');
 
 class ReadThreadUseCase {
