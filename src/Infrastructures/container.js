@@ -23,12 +23,10 @@ const BcryptPasswordHash = require('./security/BcryptPasswordHash');
 // use case
 const AddUserUseCase = require('../Applications/use_case/AddUserUseCase');
 const AddThreadUseCase = require('../Applications/use_case/AddThreadUseCase');
-const ReadThreadUseCase = require('../Applications/use_case/ReadThreadUseCase');
+const GetThreadUseCase = require('../Applications/use_case/GetThreadUseCase');
 const AddCommentUseCase = require('../Applications/use_case/AddCommentUseCase');
-const ReadCommentUseCase = require('../Applications/use_case/ReadCommentUseCase');
 const DeleteCommentUseCase = require('../Applications/use_case/DeleteCommentUseCase');
 const AddReplyUseCase = require('../Applications/use_case/AddReplyUseCase');
-const ReadReplyUseCase = require('../Applications/use_case/ReadReplyUseCase');
 const DeleteReplyUseCase = require('../Applications/use_case/DeleteReplyUseCase');
 const AuthenticationTokenManager = require('../Applications/security/AuthenticationTokenManager');
 const JwtTokenManager = require('./security/JwtTokenManager');
@@ -167,8 +165,8 @@ container.register([
     },
   },
   {
-    key: ReadThreadUseCase.name,
-    Class: ReadThreadUseCase,
+    key: GetThreadUseCase.name,
+    Class: GetThreadUseCase,
     parameter: {
       injectType: 'destructuring',
       dependencies: [
@@ -197,19 +195,6 @@ container.register([
           name: 'threadRepository',
           internal: ThreadRepository.name,
         },
-        {
-          name: 'commentRepository',
-          internal: CommentRepository.name,
-        },
-      ],
-    },
-  },
-  {
-    key: ReadCommentUseCase.name,
-    Class: ReadCommentUseCase,
-    parameter: {
-      injectType: 'destructuring',
-      dependencies: [
         {
           name: 'commentRepository',
           internal: CommentRepository.name,
@@ -248,19 +233,6 @@ container.register([
           name: 'commentRepository',
           internal: CommentRepository.name,
         },
-        {
-          name: 'replyRepository',
-          internal: ReplyRepository.name,
-        },
-      ],
-    },
-  },
-  {
-    key: ReadReplyUseCase.name,
-    Class: ReadReplyUseCase,
-    parameter: {
-      injectType: 'destructuring',
-      dependencies: [
         {
           name: 'replyRepository',
           internal: ReplyRepository.name,

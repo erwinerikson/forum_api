@@ -14,7 +14,7 @@ const ThreadsTableTestHelper = {
     return result.rows[0];
   },
 
-  async readThread(thread) {
+  async getThread(thread) {
     const { id } = thread;
     const query = {
       text: `SELECT threads.id, threads.title, threads.body, threads.date, users.username FROM threads

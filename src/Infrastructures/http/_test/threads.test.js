@@ -96,31 +96,14 @@ describe('/threads endpoint', () => {
       expect(responseJson.message).toEqual('tidak dapat membuat thread baru karena tipe data tidak sesuai');
     });
 
-    it('should response 201 and new thread', async () => {
+    it('should handle server error correctly', async () => {
       // Arrange
-      const requestPayload = {
+      const payloadUser = {
+        id: 'user-123',
         username: 'dicoding',
-        password: 'secret',
-        fullname: 'Dicoding Indonesia',
       };
-      const server = await createServer(container);
-      // add user
-      await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: requestPayload,
-      });
-      // authentication
-      const responseAuthentication = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'dicoding',
-          password: 'secret',
-        },
-      });
-      const responseJsonAuthentication = JSON.parse(responseAuthentication.payload);
-      const { accessToken } = responseJsonAuthentication.data;
+      const accessToken = Jwt.token.generate(payloadUser, process.env.ACCESS_TOKEN_KEY);
+      const server = await createServer({}); // fake injection
 
       // Action
       const response = await server.inject({
@@ -137,91 +120,196 @@ describe('/threads endpoint', () => {
 
       // Assert
       const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(500);
+      expect(responseJson.status).toEqual('error');
+      expect(responseJson.message).toEqual('terjadi kegagalan pada server kami');
+    });
+
+    it('should response 201 and new thread', async () => {
+      // Arrange
+      const payloadUser = {
+        id: 'user-123',
+        username: 'dicoding',
+      };
+      const accessToken = Jwt.token.generate(payloadUser, process.env.ACCESS_TOKEN_KEY);
+      // add user
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
+        username: 'dicoding',
+        password: 'secret_password',
+        fullname: 'Dicoding Indonesia',
+      });
+      const payloadThread = {
+        title: 'sebuah thread',
+        body: 'sebuah body thread',
+      };
+      const server = await createServer(container);
+
+      // Action
+      const response = await server.inject({
+        method: 'POST',
+        url: '/threads',
+        payload: payloadThread,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(201);
       expect(responseJson.status).toEqual('success');
-      expect(responseJson.data).toBeDefined();
-      expect(responseJson.data.id).toEqual(response.id);
-      expect(responseJson.data.title).toEqual(response.title);
-      expect(responseJson.data.owner).toEqual(response.owner);
+      expect(responseJson.data.addedThread).toBeDefined();
     });
   });
 
   describe('when GET /threads/{id}', () => {
-    it('should response 200 and read thread', async () => {
+    it('should response 404 when thread unavailable', async () => {
       // Arrange
-      const requestPayload = {
-        username: 'dicoding',
-        password: 'secret',
-        fullname: 'Dicoding Indonesia',
-      };
-      const server = await createServer(container);
       // add user
-      await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: requestPayload,
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
+        username: 'dicoding',
+        password: 'secret_password',
+        fullname: 'Dicoding Indonesia',
       });
-      // authentication
-      const responseAuthentication = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'dicoding',
-          password: 'secret',
-        },
+      // add thread
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
+        title: 'sebuah thread',
+        body: 'sebuah body thread',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const responseJsonAuthentication = JSON.parse(responseAuthentication.payload);
-      const { accessToken } = responseJsonAuthentication.data;
-      // Thread
-      const responseThread = await server.inject({
-        method: 'POST',
-        url: '/threads',
-        payload: {
-          title: 'sebuah thread',
-          body: 'sebuah body thread',
-        },
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+      // add comment
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        thread: 'thread-123',
+        content: 'sebuah comment',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
       });
-      const responseJsonThread = JSON.parse(responseThread.payload);
-      const threadId = responseJsonThread.data.addedThread.id;
-      // Comment
-      const responseComment = await server.inject({
-        method: 'POST',
-        url: `/threads/${threadId}/comments`,
-        payload: {
-          content: 'sebuah comment',
-        },
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      await server.inject({
-        method: 'POST',
-        url: `/threads/${threadId}/comments`,
-        payload: {
-          content: 'sebuah comment',
-        },
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const responseJsonComment = JSON.parse(responseComment.payload);
-      const commentId = responseJsonComment.data.addedComment.id;
-      // Reply
-      await server.inject({
-        method: 'POST',
-        url: `/threads/${threadId}/comments/${commentId}/replies`,
-        payload: {
-          content: 'sebuah balasan',
-        },
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const server = await createServer(container);
 
       // Action
+      const threadId = 'thread-321';
+      const response = await server.inject({
+        method: 'GET',
+        url: `/threads/${threadId}`,
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('thread tidak ditemukan');
+    });
+
+    it('should handle server error correctly', async () => {
+      // Arrange
+      const server = await createServer({}); // fake injection
+
+      // Action
+      const response = await server.inject({
+        method: 'GET',
+        url: '/threads/{threadId}',
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(500);
+      expect(responseJson.status).toEqual('error');
+      expect(responseJson.message).toEqual('terjadi kegagalan pada server kami');
+    });
+
+    it('should response 200 and get thread without replies', async () => {
+      // Arrange
+      // add user
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
+        username: 'dicoding',
+        password: 'secret_password',
+        fullname: 'Dicoding Indonesia',
+      });
+      // add thread
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
+        title: 'sebuah thread',
+        body: 'sebuah body thread',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
+      });
+      // add comment
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        thread: 'thread-123',
+        content: 'sebuah comment',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
+      });
+      const server = await createServer(container);
+
+      // Action
+      const threadId = 'thread-123';
+      const response = await server.inject({
+        method: 'GET',
+        url: `/threads/${threadId}`,
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data).toBeDefined();
+      expect(responseJson.data.thread).toBeDefined();
+      expect(responseJson.data.thread.comments).toHaveLength(1);
+    });
+
+    it('should response 200 and get thread with replies', async () => {
+      // Arrange
+      // add user
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
+        username: 'dicoding',
+        password: 'secret_password',
+        fullname: 'Dicoding Indonesia',
+      });
+      // add thread
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
+        title: 'sebuah thread',
+        body: 'sebuah body thread',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
+      });
+      // add comment
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        thread: 'thread-123',
+        content: 'sebuah comment',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
+      });
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-124',
+        thread: 'thread-123',
+        content: 'sebuah comment',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:10.775Z',
+      });
+      // add reply
+      await RepliesTableTestHelper.addReply({
+        id: 'reply-123',
+        content: 'sebuah reply',
+        thread: 'thread-123',
+        comment: 'comment-123',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
+      });
+      const server = await createServer(container);
+
+      // Action
+      const threadId = 'thread-123';
       const response = await server.inject({
         method: 'GET',
         url: `/threads/${threadId}`,
@@ -235,6 +323,7 @@ describe('/threads endpoint', () => {
       expect(responseJson.data.thread).toBeDefined();
       expect(responseJson.data.thread.comments).toHaveLength(2);
       expect(responseJson.data.thread.comments[0].replies).toHaveLength(1);
+      expect(responseJson.data.thread.comments[1].replies).toHaveLength(0);
     });
   });
 });

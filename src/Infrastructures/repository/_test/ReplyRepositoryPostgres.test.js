@@ -3,7 +3,10 @@ const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 const AddReply = require('../../../Domains/replies/entities/AddReply');
+const AddedReply = require('../../../Domains/replies/entities/AddedReply');
+const GetThread = require('../../../Domains/threads/entities/GetThread');
 const pool = require('../../database/postgres/pool');
 const ReplyRepositoryPostgres = require('../ReplyRepositoryPostgres');
 
@@ -20,7 +23,45 @@ describe('ReplyRepositoryPostgres', () => {
   });
 
   describe('addReply function', () => {
-    it('should persist add reply and return reply data correctly', async () => {
+    it('should persist add comment', async () => {
+      // Arrange
+      await UsersTableTestHelper.addUser({
+        id: 'user-123',
+        username: 'dicoding',
+        password: 'secret_password',
+        fullname: 'Dicoding Indonesia',
+      });
+      await ThreadsTableTestHelper.addThread({
+        title: 'sebuah thread',
+        body: 'sebuah body thread',
+        owner: 'user-123',
+      });
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        thread: 'thread-123',
+        content: 'sebuah comment',
+        owner: 'user-123',
+        date: '2021-08-08T07:19:09.775Z',
+      });
+      const addReply = new AddReply({
+        content: 'sebuah reply',
+        thread: 'thread-123',
+        comment: 'comment-123',
+        owner: 'user-123',
+      });
+      const fakeIdGenerator = () => '123'; // stub!
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
+
+      // Action
+      await replyRepositoryPostgres.addReply(addReply);
+
+      // Assert
+      await expect(replyRepositoryPostgres.verifyReplyAvailability('reply-123'))
+        .resolves
+        .not.toThrowError(NotFoundError);
+    });
+
+    it('should return added reply correctly', async () => {
       // Arrange
       await UsersTableTestHelper.addUser({
         id: 'user-123',
@@ -48,11 +89,6 @@ describe('ReplyRepositoryPostgres', () => {
         comment: 'comment-123',
         owner: 'user-123',
       });
-      const expectedAddReply = {
-        id: 'reply-123',
-        content: 'sebuah reply',
-        owner: 'user-123',
-      };
       const fakeIdGenerator = () => '123'; // stub!
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
   
@@ -60,24 +96,26 @@ describe('ReplyRepositoryPostgres', () => {
       const addReply = await replyRepositoryPostgres.addReply(payloadAddReply);
   
       // Assert
-      const replyId = await replyRepositoryPostgres.findRepliesById(expectedAddReply.id);
-      expect(addReply).toEqual(expectedAddReply);
-      expect(replyId).toEqual(expectedAddReply.id);
+      expect(addReply).toEqual(new AddedReply({
+        id: 'reply-123',
+        content: 'sebuah reply',
+        owner: 'user-123',
+      }));
     });
   });
 
-  describe('findRepliesById function', () => {
+  describe('verifyReplyAvailability function', () => {
     it('should throw NotFoundError when reply not found', async () => {
       // Arrange
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action & Assert
-      await expect(replyRepositoryPostgres.findRepliesById('reply-123'))
+      await expect(replyRepositoryPostgres.verifyReplyAvailability('reply-123'))
         .rejects
         .toThrowError(NotFoundError);
     });
 
-    it('should return reply id correctly', async () => {
+    it('should not throw NotFoundError when reply available', async () => {
       // Arrange
       await UsersTableTestHelper.addUser({
         id: 'user-123',
@@ -107,18 +145,16 @@ describe('ReplyRepositoryPostgres', () => {
         owner: 'user-123',
         date: '2021-08-08T07:19:09.775Z',
       });
-      const expectedIdReply = 'reply-123';
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
-      // Action
-      const reply = await replyRepositoryPostgres.findRepliesById('reply-123');
-
-      // Assert
-      expect(reply).toStrictEqual(expectedIdReply);
+      // Action & Assert
+      await expect(replyRepositoryPostgres.verifyReplyAvailability('reply-123'))
+        .resolves
+        .not.toThrowError(NotFoundError);
     });
   });
 
-  describe('findRepliesByOwner function', () => {
+  describe('verifyReplyByOwnerAvailability function', () => {
     it('should throw AuthenticationError when reply not found', async () => {
       // Arrange
       const findOwnerReply = {
@@ -130,9 +166,9 @@ describe('ReplyRepositoryPostgres', () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
   
       // Action & Assert
-      await expect(replyRepositoryPostgres.findRepliesByOwner(findOwnerReply))
+      await expect(replyRepositoryPostgres.verifyReplyByOwnerAvailability(findOwnerReply))
         .rejects
-        .toThrowError('Missing Authentication to Access');
+        .toThrowError(AuthorizationError);
     });
 
     it('should return reply id correctly', async () => {
@@ -171,18 +207,16 @@ describe('ReplyRepositoryPostgres', () => {
         comment: 'comment-123',
         owner: 'user-123',
       };
-      const expectedIdReply = 'reply-123';
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
   
-      // Action
-      const reply = await replyRepositoryPostgres.findRepliesByOwner(findOwnerReply);
-  
-      // Assert
-      expect(reply).toEqual(expectedIdReply);
+      // Action & Assert
+      await expect(replyRepositoryPostgres.verifyReplyByOwnerAvailability(findOwnerReply))
+        .resolves
+        .not.toThrowError(AuthorizationError);
     });
   });
 
-  describe('readReply function', () => {
+  describe('getReply function', () => {
     it('should return reply correctly', async () => {
       // Arrange
       await UsersTableTestHelper.addUser({
@@ -213,7 +247,7 @@ describe('ReplyRepositoryPostgres', () => {
         owner: 'user-123',
         date: '2021-08-08T07:19:09.775Z',
       });
-      const expectedReadReply = [
+      const expectedGetReply = [
         {
           id: 'reply-123',
           comment: 'comment-123',
@@ -226,10 +260,10 @@ describe('ReplyRepositoryPostgres', () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
     
       // Action
-      const readReply = await replyRepositoryPostgres.readReply({ id: 'thread-123' });
+      const readReply = await replyRepositoryPostgres.getReply(new GetThread({ id: 'thread-123' }));
 
       // Assert
-      expect(readReply).toStrictEqual(expectedReadReply);
+      expect(readReply).toStrictEqual(expectedGetReply);
     });
   });
 

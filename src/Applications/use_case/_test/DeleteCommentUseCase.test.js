@@ -58,11 +58,11 @@ describe('DeleteCommentUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     // Mocking
-    mockThreadRepository.findThreadsById = jest.fn()
+    mockThreadRepository.verifyThreadAvailability = jest.fn()
       .mockImplementation(() => Promise.resolve());
-    mockCommentRepository.findCommentsById = jest.fn()
+    mockCommentRepository.verifyCommentAvailability = jest.fn()
       .mockImplementation(() => Promise.resolve());
-    mockCommentRepository.findCommentsByOwner = jest.fn()
+    mockCommentRepository.verifyCommentByOwnerAvailability = jest.fn()
       .mockImplementation(() => Promise.resolve());
     mockCommentRepository.deleteComment = jest.fn()
       .mockImplementation(() => Promise.resolve(expectedDeleteComment));
@@ -77,9 +77,12 @@ describe('DeleteCommentUseCase', () => {
 
     // Assert
     expect(deleteComment).toStrictEqual(1);
-    expect(mockThreadRepository.findThreadsById).toHaveBeenCalledWith(useCasePayload.thread);
-    expect(mockCommentRepository.findCommentsById).toHaveBeenCalledWith(useCasePayload.comment);
-    expect(mockCommentRepository.findCommentsByOwner).toHaveBeenCalledWith(useCasePayload);
+    expect(mockThreadRepository.verifyThreadAvailability)
+      .toHaveBeenCalledWith(useCasePayload.thread);
+    expect(mockCommentRepository.verifyCommentAvailability)
+      .toHaveBeenCalledWith(useCasePayload.comment);
+    expect(mockCommentRepository.verifyCommentByOwnerAvailability)
+      .toHaveBeenCalledWith(useCasePayload);
     expect(mockCommentRepository.deleteComment).toHaveBeenCalledWith(new DeleteComment({
       thread: 'thread-123',
       comment: 'comment-123',

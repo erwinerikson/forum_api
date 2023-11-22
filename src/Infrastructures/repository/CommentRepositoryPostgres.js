@@ -1,6 +1,7 @@
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
 const ThreadRepository = require('../../Domains/threads/ThreadRepository');
+const AddedComment = require('../../Domains/comments/entities/AddedComment');
 
 class CommentRepositoryPostgres extends ThreadRepository {
   constructor(pool, idGenerator) {
@@ -23,10 +24,10 @@ class CommentRepositoryPostgres extends ThreadRepository {
 
     const result = await this._pool.query(query);
 
-    return result.rows[0];
+    return new AddedComment({ ...result.rows[0] });
   }
 
-  async findCommentsById(id) {
+  async verifyCommentAvailability(id) {
     const query = {
       text: 'SELECT id FROM comments WHERE id = $1',
       values: [id],
@@ -37,11 +38,9 @@ class CommentRepositoryPostgres extends ThreadRepository {
     if (!result.rowCount) {
       throw new NotFoundError('comment tidak ditemukan');
     }
-
-    return result.rows[0].id;
   }
 
-  async findCommentsByOwner(comments) {
+  async verifyCommentByOwnerAvailability(comments) {
     const { comment: id, thread, owner } = comments;
     const query = {
       text: 'SELECT id FROM comments WHERE id = $1 AND thread = $2 AND owner = $3',
@@ -53,11 +52,9 @@ class CommentRepositoryPostgres extends ThreadRepository {
     if (!result.rowCount) {
       throw new AuthorizationError('Missing Authentication to Access');
     }
-
-    return result.rows[0].id;
   }
 
-  async readComment(comments) {
+  async getComment(comments) {
     const { id } = comments;
     const query = {
       text: `SELECT comments.id, users.username, comments.date, comments.content, comments.is_delete FROM comments

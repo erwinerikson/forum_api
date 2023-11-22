@@ -16,10 +16,10 @@ class DeleteReplyUseCase {
     const {
       thread, comment, reply: id, owner,
     } = deleteReply;
-    await this._threadRepository.findThreadsById(thread);
-    await this._commentRepository.findCommentsById(comment);
-    await this._replyRepository.findRepliesById(id);
-    await this._replyRepository.findRepliesByOwner({
+    await this._threadRepository.verifyThreadAvailability(thread);
+    await this._commentRepository.verifyCommentAvailability(comment);
+    await this._replyRepository.verifyReplyAvailability(id);
+    await this._replyRepository.verifyReplyByOwnerAvailability({
       id, thread, comment, owner,
     });
     return this._replyRepository.deleteReply(deleteReply);

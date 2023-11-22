@@ -1,6 +1,7 @@
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
 const ThreadRepository = require('../../Domains/threads/ThreadRepository');
+const AddedReply = require('../../Domains/replies/entities/AddedReply');
 
 class ReplyRepositoryPostgres extends ThreadRepository {
   constructor(pool, idGenerator) {
@@ -24,10 +25,10 @@ class ReplyRepositoryPostgres extends ThreadRepository {
 
     const result = await this._pool.query(query);
 
-    return result.rows[0];
+    return new AddedReply({ ...result.rows[0] });
   }
 
-  async findRepliesById(id) {
+  async verifyReplyAvailability(id) {
     const query = {
       text: 'SELECT id FROM replies WHERE id = $1',
       values: [id],
@@ -38,11 +39,9 @@ class ReplyRepositoryPostgres extends ThreadRepository {
     if (!result.rowCount) {
       throw new NotFoundError('balasan tidak ditemukan');
     }
-
-    return result.rows[0].id;
   }
 
-  async findRepliesByOwner(reply) {
+  async verifyReplyByOwnerAvailability(reply) {
     const {
       id, thread, comment, owner, 
     } = reply;
@@ -56,11 +55,9 @@ class ReplyRepositoryPostgres extends ThreadRepository {
     if (!result.rowCount) {
       throw new AuthorizationError('Missing Authentication to Access');
     }
-
-    return result.rows[0].id;
   }
 
-  async readReply(reply) {
+  async getReply(reply) {
     const { id } = reply;
     const query = {
       text: `SELECT replies.id, replies.comment, replies.content, replies.date, users.username, replies.is_delete FROM replies

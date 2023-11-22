@@ -14,7 +14,7 @@ const CommentsTableTestHelper = {
     return result.rows[0];
   },
 
-  async readComment(comments) {
+  async getComment(comments) {
     const { id } = comments;
     const query = {
       text: `SELECT comments.id, users.username, comments.date, comments.content, comments.is_delete FROM comments

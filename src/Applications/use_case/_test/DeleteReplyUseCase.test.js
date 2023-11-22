@@ -79,13 +79,13 @@ describe('DeleteReplyUseCase', () => {
       replyRepository: mockReplyRepository,
     });
     // Mocking
-    mockThreadRepository.findThreadsById = jest.fn()
+    mockThreadRepository.verifyThreadAvailability = jest.fn()
       .mockImplementation(() => Promise.resolve());
-    mockCommentRepository.findCommentsById = jest.fn()
+    mockCommentRepository.verifyCommentAvailability = jest.fn()
       .mockImplementation(() => Promise.resolve());
-    mockReplyRepository.findRepliesById = jest.fn()
+    mockReplyRepository.verifyReplyAvailability = jest.fn()
       .mockImplementation(() => Promise.resolve());
-    mockReplyRepository.findRepliesByOwner = jest.fn()
+    mockReplyRepository.verifyReplyByOwnerAvailability = jest.fn()
       .mockImplementation(() => Promise.resolve());
     mockReplyRepository.deleteReply = jest.fn()
       .mockImplementation(() => Promise.resolve(expectedDeleteReply));
@@ -95,10 +95,11 @@ describe('DeleteReplyUseCase', () => {
 
     // Assert
     expect(deleteReply).toStrictEqual(1);
-    expect(mockThreadRepository.findThreadsById).toBeCalledWith(useCasePayload.thread);
-    expect(mockCommentRepository.findCommentsById).toBeCalledWith(useCasePayload.comment);
-    expect(mockReplyRepository.findRepliesById).toBeCalledWith(useCasePayload.reply);
-    expect(mockReplyRepository.findRepliesByOwner).toBeCalledWith(useCasePayloadFindOwner);
+    expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith(useCasePayload.thread);
+    expect(mockCommentRepository.verifyCommentAvailability).toBeCalledWith(useCasePayload.comment);
+    expect(mockReplyRepository.verifyReplyAvailability).toBeCalledWith(useCasePayload.reply);
+    expect(mockReplyRepository.verifyReplyByOwnerAvailability)
+      .toBeCalledWith(useCasePayloadFindOwner);
     expect(mockReplyRepository.deleteReply).toBeCalledWith(new DeleteReply({
       thread: 'thread-123',
       comment: 'comment-123',

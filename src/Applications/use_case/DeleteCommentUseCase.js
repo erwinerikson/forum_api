@@ -11,9 +11,9 @@ class DeleteCommentUseCase {
       
   async execute(useCasePayload) {
     const deleteComment = new DeleteComment(useCasePayload);
-    await this._threadRepository.findThreadsById(deleteComment.thread);
-    await this._commentRepository.findCommentsById(deleteComment.comment);
-    await this._commentRepository.findCommentsByOwner(deleteComment);
+    await this._threadRepository.verifyThreadAvailability(deleteComment.thread);
+    await this._commentRepository.verifyCommentAvailability(deleteComment.comment);
+    await this._commentRepository.verifyCommentByOwnerAvailability(deleteComment);
     return this._commentRepository.deleteComment(deleteComment);
   }
 }

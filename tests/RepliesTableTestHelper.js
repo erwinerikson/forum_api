@@ -14,7 +14,7 @@ const RepliesTableTestHelper = {
     return result.rows[0];
   },
 
-  async readReply(reply) {
+  async getReply(reply) {
     const { id } = reply;
     const query = {
       text: `SELECT replies.id, replies.comment, users.username, replies.date, replies.content, replies.is_delete FROM replies
