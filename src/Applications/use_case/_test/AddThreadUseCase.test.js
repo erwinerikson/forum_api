@@ -54,8 +54,7 @@ describe('AddThreadUseCase', () => {
     });
 
     /** mocking needed function */
-    mockThreadRepository.addThread = jest.fn()
-      .mockImplementation(() => Promise.resolve(mockAddedThread));
+    mockThreadRepository.addThread = jest.fn(() => Promise.resolve(mockAddedThread));
 
     // Action
     const addThread = await addThreadUseCase.execute(new AddThread(useCasePayload));
