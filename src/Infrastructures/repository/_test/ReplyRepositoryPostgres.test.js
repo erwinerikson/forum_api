@@ -305,6 +305,8 @@ describe('ReplyRepositoryPostgres', () => {
       const deleteReply = await replyRepositoryPostgres.deleteReply({ reply: 'reply-123' });
 
       // Assert
+      const isDeleteReply = await RepliesTableTestHelper.checkIsDelete({ reply: 'reply-123' });
+      expect(isDeleteReply).toStrictEqual({ is_delete: 1 });
       expect(deleteReply).toStrictEqual(expectedDeleteReply);
     });
   });

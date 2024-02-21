@@ -250,6 +250,8 @@ describe('CommentRepositoryPostgres', () => {
       const deleteComment = await commentRepositoryPostgres.deleteComment({ comment: 'comment-123' });
 
       // Assert
+      const isDeleteComment = await CommentsTableTestHelper.checkIsDelete({ comment: 'comment-123' });
+      expect(isDeleteComment).toStrictEqual({ is_delete: 1 });
       expect(deleteComment).toStrictEqual(expectedDeleteComment);
     });
   });

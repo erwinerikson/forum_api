@@ -100,6 +100,7 @@ describe('GetThreadUseCase', () => {
     // Action
     getThreadUseCase._processData(comment);
 
+    // Assert
     expect(mockProcessData).toReturnWith(expectedProcessDataComment);
   });
 
@@ -136,6 +137,7 @@ describe('GetThreadUseCase', () => {
     // Action
     getThreadUseCase._processData(replies);
 
+    // Assert
     expect(mockProcessData).toReturnWith(expectedProcessDataReply);
   });
 

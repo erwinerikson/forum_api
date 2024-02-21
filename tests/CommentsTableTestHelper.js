@@ -13,30 +13,16 @@ const CommentsTableTestHelper = {
     await pool.query(query);
   },
 
-  async getComment(comments) {
-    const { id } = comments;
+  async checkIsDelete(comments) {
+    const { comment: id } = comments;
     const query = {
-      text: `SELECT comments.id, users.username, comments.date, comments.content, comments.is_delete FROM comments
-      LEFT JOIN users ON users.id = comments.owner
-      WHERE comments.thread = $1 ORDER BY date ASC`,
+      text: 'SELECT is_delete FROM comments WHERE id = $1',
       values: [id],
     };
 
     const result = await pool.query(query);
-    return result.rows;
-  },
 
-  async deleteComment(comments) {
-    const { comment: id } = comments;
-    const updatedAt = '2021-08-08T07:19:09.775Z';
-    const is_delete = 1;
-    const query = {
-      text: 'UPDATE comments SET updated_at = $1, is_delete = $2 WHERE id = $3 RETURNING is_delete',
-      values: [updatedAt, is_delete, id],
-    };
-      
-    const result = await pool.query(query);
-    return result.rows[0].is_delete;
+    return result.rows[0];
   },
 
   async cleanTable() {

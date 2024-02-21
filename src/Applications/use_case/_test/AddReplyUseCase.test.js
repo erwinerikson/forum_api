@@ -80,9 +80,9 @@ describe('AddReplyUseCase', () => {
     });
     // Mocking
     mockThreadRepository.verifyThreadAvailability = jest.fn()
-      .mockImplementation(() => Promise.resolve(useCasePayload.thread));
+      .mockImplementation(() => Promise.resolve());
     mockCommentRepository.verifyCommentAvailability = jest.fn()
-      .mockImplementation(() => Promise.resolve(useCasePayload.comment));
+      .mockImplementation(() => Promise.resolve());
     mockReplyRepository.addReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockAddedReply));
 
